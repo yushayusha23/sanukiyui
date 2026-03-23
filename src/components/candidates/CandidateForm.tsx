@@ -245,7 +245,7 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
             />
           </div>
           <div>
-            <label className="form-label">IF経験年数</label>
+            <label className="form-label">FS経験年数</label>
             <input
               name="ifYears"
               type="number"

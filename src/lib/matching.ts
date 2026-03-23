@@ -11,11 +11,12 @@ type CandidateForMatch = {
   minimumHourlyRate: number | null
   skillDetails: {
     isYears: number | null
-    ifYears: number | null
+    ifYears: number | null   // FS経験年数
     saasYears: number | null
     tools: string | null
     freeSkillNote: string | null
     strengths: string | null
+    otherBpoExperience: string | null
   } | null
 }
 
@@ -27,6 +28,9 @@ type ProjectForMatch = {
   desiredRate: number | null
   minimumRate: number | null
   requiredSkills: string | null
+  isYearsRequired: number | null
+  fsYearsRequired: number | null
+  saasYearsRequired: number | null
 }
 
 export type MatchScore = {
@@ -65,17 +69,83 @@ function scoreMatch(
   let score = 0
   const reasons: string[] = []
 
-  // 1. スキル一致 (最大30点)
-  if (candidate.skillDetails && project.requiredSkills) {
-    const requiredLower = project.requiredSkills.toLowerCase()
-    const skillScore = calcSkillScore(candidate.skillDetails, requiredLower)
-    if (skillScore > 0) {
-      score += skillScore
-      reasons.push('スキル一致')
+  const sd = candidate.skillDetails
+
+  // 1. IS経験年数マッチング (最大20点)
+  if (sd?.isYears && sd.isYears > 0) {
+    const required = project.isYearsRequired ?? detectRequiredYears(project.requiredSkills, ['is', 'インサイドセールス', 'inside sales', 'テレアポ'])
+    if (required !== null && required > 0) {
+      const s = calcYearsScore(sd.isYears, required, 20)
+      if (s > 0) {
+        score += s
+        reasons.push(`IS経験${sd.isYears}年 (必要${required}年)`)
+      }
+    } else if (keywordMatch(project.requiredSkills, ['is', 'インサイドセールス', 'inside sales', 'テレアポ'])) {
+      // 必要年数未設定だがキーワード一致
+      score += Math.min(15, sd.isYears * 4)
+      reasons.push(`IS経験${sd.isYears}年`)
     }
   }
 
-  // 2. 単価範囲 (最大25点)
+  // 2. FS経験年数マッチング (最大20点)
+  if (sd?.ifYears && sd.ifYears > 0) {
+    const required = project.fsYearsRequired ?? detectRequiredYears(project.requiredSkills, ['fs', 'フィールドセールス', 'field sales'])
+    if (required !== null && required > 0) {
+      const s = calcYearsScore(sd.ifYears, required, 20)
+      if (s > 0) {
+        score += s
+        reasons.push(`FS経験${sd.ifYears}年 (必要${required}年)`)
+      }
+    } else if (keywordMatch(project.requiredSkills, ['fs', 'フィールドセールス', 'field sales'])) {
+      score += Math.min(15, sd.ifYears * 4)
+      reasons.push(`FS経験${sd.ifYears}年`)
+    }
+  }
+
+  // 3. SaaS経験年数マッチング (最大15点)
+  if (sd?.saasYears && sd.saasYears > 0) {
+    const required = project.saasYearsRequired ?? detectRequiredYears(project.requiredSkills, ['saas', 'さーす'])
+    if (required !== null && required > 0) {
+      const s = calcYearsScore(sd.saasYears, required, 15)
+      if (s > 0) {
+        score += s
+        reasons.push(`SaaS経験${sd.saasYears}年 (必要${required}年)`)
+      }
+    } else if (keywordMatch(project.requiredSkills, ['saas', 'さーす'])) {
+      score += Math.min(10, sd.saasYears * 4)
+      reasons.push(`SaaS経験${sd.saasYears}年`)
+    }
+  }
+
+  // 4. ツール一致 (最大10点)
+  if (sd?.tools && project.requiredSkills) {
+    const requiredLower = project.requiredSkills.toLowerCase()
+    const tools = sd.tools.toLowerCase().split(/[,、\s]+/)
+    const toolMatches = tools.filter((t) => t.length > 1 && requiredLower.includes(t))
+    if (toolMatches.length > 0) {
+      score += Math.min(10, toolMatches.length * 4)
+      reasons.push(`ツール一致: ${toolMatches.join(', ')}`)
+    }
+  }
+
+  // 5. 得意領域・その他BPO経験・自由記述とのキーワード一致 (最大8点)
+  if (project.requiredSkills) {
+    const requiredLower = project.requiredSkills.toLowerCase()
+    const textFields = [sd?.strengths, sd?.otherBpoExperience, sd?.freeSkillNote]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+    if (textFields) {
+      const keywords = textFields.split(/[\s、,，。]+/).filter((k) => k.length > 1)
+      const matches = keywords.filter((k) => requiredLower.includes(k))
+      if (matches.length > 0) {
+        score += Math.min(8, matches.length * 2)
+        reasons.push('スキル詳細一致')
+      }
+    }
+  }
+
+  // 6. 単価範囲 (最大25点)
   const rateScore = calcRateScore(
     candidate.desiredHourlyRate,
     candidate.minimumHourlyRate,
@@ -84,14 +154,10 @@ function scoreMatch(
   )
   if (rateScore > 0) {
     score += rateScore
-    if (rateScore >= 20) {
-      reasons.push('単価範囲内')
-    } else {
-      reasons.push('単価近似')
-    }
+    reasons.push(rateScore >= 20 ? '単価範囲内' : '単価近似')
   }
 
-  // 3. 勤務形態一致 (20点)
+  // 7. 勤務形態一致 (20点)
   if (
     candidate.preferredWorkStyle &&
     project.workStyle &&
@@ -109,65 +175,48 @@ function scoreMatch(
   }
 }
 
-function calcSkillScore(
-  skillDetails: CandidateForMatch['skillDetails'],
-  requiredLower: string
-): number {
-  if (!skillDetails) return 0
-
-  let score = 0
-
-  // IS経験
-  if (skillDetails.isYears && skillDetails.isYears > 0) {
-    if (
-      requiredLower.includes('is') ||
-      requiredLower.includes('インサイドセールス') ||
-      requiredLower.includes('テレアポ')
-    ) {
-      score += Math.min(15, skillDetails.isYears * 5)
-    }
+/**
+ * 必要スキルテキストから年数を検出（例: "IS経験2年以上" → 2）
+ */
+function detectRequiredYears(requiredSkills: string | null, keywords: string[]): number | null {
+  if (!requiredSkills) return null
+  const lower = requiredSkills.toLowerCase()
+  for (const kw of keywords) {
+    if (!lower.includes(kw)) continue
+    // キーワード周辺の数字を探す（例: "IS2年", "IS経験2年以上"）
+    const pattern = new RegExp(`${kw}[^0-9]*([0-9]+(?:\\.[0-9]+)?)\\s*年`, 'i')
+    const m = lower.match(pattern)
+    if (m) return parseFloat(m[1])
+    // 逆順（例: "2年以上のIS経験"）
+    const idx = lower.indexOf(kw)
+    const before = lower.slice(Math.max(0, idx - 20), idx)
+    const m2 = before.match(/([0-9]+(?:\.[0-9]+)?)\s*年/)
+    if (m2) return parseFloat(m2[1])
   }
+  return null
+}
 
-  // IF経験
-  if (skillDetails.ifYears && skillDetails.ifYears > 0) {
-    if (
-      requiredLower.includes('if') ||
-      requiredLower.includes('インフォメーション') ||
-      requiredLower.includes('カスタマーサポート') ||
-      requiredLower.includes('cs')
-    ) {
-      score += Math.min(15, skillDetails.ifYears * 5)
-    }
-  }
+/**
+ * テキストにキーワードが含まれるか
+ */
+function keywordMatch(text: string | null, keywords: string[]): boolean {
+  if (!text) return false
+  const lower = text.toLowerCase()
+  return keywords.some((kw) => lower.includes(kw))
+}
 
-  // SaaS経験
-  if (skillDetails.saasYears && skillDetails.saasYears > 0) {
-    if (requiredLower.includes('saas')) {
-      score += Math.min(10, skillDetails.saasYears * 5)
-    }
-  }
-
-  // ツール一致
-  if (skillDetails.tools) {
-    const tools = skillDetails.tools.toLowerCase().split(/[,、\s]+/)
-    const toolMatches = tools.filter(
-      (t) => t.length > 1 && requiredLower.includes(t)
-    )
-    if (toolMatches.length > 0) {
-      score += Math.min(10, toolMatches.length * 5)
-    }
-  }
-
-  // 自由記述スキルとの一致
-  if (skillDetails.freeSkillNote) {
-    const keywords = skillDetails.freeSkillNote.toLowerCase().split(/[\s、,]+/)
-    const matches = keywords.filter((k) => k.length > 1 && requiredLower.includes(k))
-    if (matches.length > 0) {
-      score += Math.min(5, matches.length * 2)
-    }
-  }
-
-  return Math.min(score, 30)
+/**
+ * 経験年数スコア計算
+ * - 必要年数以上: 満点
+ * - 必要年数の75%以上: 満点の70%
+ * - 必要年数の50%以上: 満点の40%
+ * - それ以下: 0
+ */
+function calcYearsScore(actual: number, required: number, maxScore: number): number {
+  if (actual >= required) return maxScore
+  if (actual >= required * 0.75) return Math.round(maxScore * 0.7)
+  if (actual >= required * 0.5) return Math.round(maxScore * 0.4)
+  return 0
 }
 
 function calcRateScore(
@@ -182,20 +231,9 @@ function calcRateScore(
   const cDesired = candidateDesired ?? 0
   const cMin = candidateMinimum ?? cDesired * 0.9
 
-  // 候補者の最低希望単価が案件の希望単価以下 → 完全一致
-  if (cMin <= projectDesired && cDesired >= projectMinimum) {
-    return 25
-  }
-
-  // 候補者の最低単価が案件の最低単価以下 → ほぼ一致
-  if (cMin <= projectDesired) {
-    return 15
-  }
-
-  // 候補者の希望単価が案件の希望単価の±20%以内 → 近似
-  if (Math.abs(cDesired - projectDesired) / projectDesired <= 0.2) {
-    return 8
-  }
+  if (cMin <= projectDesired && cDesired >= projectMinimum) return 25
+  if (cMin <= projectDesired) return 15
+  if (Math.abs(cDesired - projectDesired) / projectDesired <= 0.2) return 8
 
   return 0
 }

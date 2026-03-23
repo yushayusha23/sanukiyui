@@ -17,6 +17,9 @@ type Project = {
   minimumRate?: number | null
   workConditions?: string | null
   recruitmentStatus?: string | null
+  isYearsRequired?: number | null
+  fsYearsRequired?: number | null
+  saasYearsRequired?: number | null
   status: string
   clientId?: string | null
 }
@@ -128,7 +131,50 @@ export function ProjectForm({ project, action, backHref, clients = [] }: Project
               rows={2}
               defaultValue={project?.requiredSkills ?? ''}
               className="form-textarea"
-              placeholder="IS経験2年以上, Salesforce, SaaS知識"
+              placeholder="Salesforce, SaaS知識, 顧客折衝経験"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="card p-6">
+        <h3 className="section-title">必要経験年数</h3>
+        <p className="text-xs text-gray-500 mb-4">マッチング精度向上のため、必要な経験年数を入力してください</p>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="form-label">IS経験（最低年数）</label>
+            <input
+              name="isYearsRequired"
+              type="number"
+              min="0"
+              step="0.5"
+              defaultValue={project?.isYearsRequired ?? ''}
+              className="form-input"
+              placeholder="2.0"
+            />
+          </div>
+          <div>
+            <label className="form-label">FS経験（最低年数）</label>
+            <input
+              name="fsYearsRequired"
+              type="number"
+              min="0"
+              step="0.5"
+              defaultValue={project?.fsYearsRequired ?? ''}
+              className="form-input"
+              placeholder="1.0"
+            />
+          </div>
+          <div>
+            <label className="form-label">SaaS経験（最低年数）</label>
+            <input
+              name="saasYearsRequired"
+              type="number"
+              min="0"
+              step="0.5"
+              defaultValue={project?.saasYearsRequired ?? ''}
+              className="form-input"
+              placeholder="1.0"
             />
           </div>
         </div>

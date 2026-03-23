@@ -51,6 +51,12 @@ function extractProjectData(formData: FormData) {
     const n = parseInt(String(val), 10)
     return isNaN(n) ? null : n
   }
+  const getFloat = (key: string) => {
+    const val = formData.get(key)
+    if (!val || val === '') return null
+    const n = parseFloat(String(val))
+    return isNaN(n) ? null : n
+  }
 
   return {
     title: getString('title') || '',
@@ -64,6 +70,9 @@ function extractProjectData(formData: FormData) {
     minimumRate: getInt('minimumRate'),
     workConditions: getString('workConditions'),
     recruitmentStatus: getString('recruitmentStatus'),
+    isYearsRequired: getFloat('isYearsRequired'),
+    fsYearsRequired: getFloat('fsYearsRequired'),
+    saasYearsRequired: getFloat('saasYearsRequired'),
     status: getString('status') || 'RECRUITING',
     clientId: getString('clientId') || null,
   }

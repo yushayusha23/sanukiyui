@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { Users, Briefcase, CalendarDays, Send, CheckCircle2, TrendingUp, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
 
@@ -18,7 +18,7 @@ interface Props {
   initialMonthly: StatsData
   allTime: StatsData
   initialYear: number
-  initialMonth: number  // 1-12
+  initialMonth: number
 }
 
 type Tab = 'monthly' | 'allTime'
@@ -40,16 +40,16 @@ const colorMap: Record<string, { bg: string; text: string; border: string }> = {
   emerald: { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100' },
 }
 
+const EMPTY: StatsData = { candidates: 0, projects: 0, interviews: 0, proposals: 0, applications: 0, passed: 0, failed: 0 }
+
 export function StatsPanel({ initialMonthly, allTime, initialYear, initialMonth }: Props) {
-  const FALLBACK: StatsData = { candidates: 0, projects: 0, interviews: 0, proposals: 0, applications: 0, passed: 0, failed: 0 }
   const [open, setOpen] = useState(true)
   const [tab, setTab] = useState<Tab>('monthly')
   const [year, setYear] = useState(initialYear ?? new Date().getFullYear())
   const [month, setMonth] = useState(initialMonth ?? new Date().getMonth() + 1)
-  const [monthly, setMonthly] = useState<StatsData>(initialMonthly ?? FALLBACK)
+  const [monthly, setMonthly] = useState<StatsData>(initialMonthly ?? EMPTY)
   const [loading, setLoading] = useState(false)
 
-  // 現在月より未来には進めない
   const now = new Date()
   const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1
   const isFuture = year > now.getFullYear() || (year === now.getFullYear() && month > now.getMonth() + 1)
@@ -91,68 +91,17 @@ export function StatsPanel({ initialMonthly, allTime, initialYear, initialMonth 
     setTab('monthly')
   }
 
-  const EMPTY: StatsData = { candidates: 0, projects: 0, interviews: 0, proposals: 0, applications: 0, passed: 0, failed: 0 }
   const d = (tab === 'allTime' ? allTime : monthly) ?? EMPTY
   const passRate = (d.passed + d.failed) > 0
     ? Math.round((d.passed / (d.passed + d.failed)) * 100)
     : null
 
-  const stats = [
-    {
-      label: tab === 'allTime' ? '人材総数' : '新規人材',
-      value: d.candidates,
-      icon: <Users className="w-4 h-4" />,
-      color: 'blue',
-      href: '/candidates',
-      unit: '名',
-    },
-    {
-      label: tab === 'allTime' ? '案件総数' : '新規案件',
-      value: d.projects,
-      icon: <Briefcase className="w-4 h-4" />,
-      color: 'indigo',
-      href: '/projects',
-      unit: '件',
-    },
-    {
-      label: '面談数',
-      value: d.interviews,
-      icon: <CalendarDays className="w-4 h-4" />,
-      color: 'green',
-      href: '/interviews',
-      unit: '件',
-    },
-    {
-      label: '提案数',
-      value: d.proposals,
-      icon: <Send className="w-4 h-4" />,
-      color: 'yellow',
-      href: '/candidates',
-      unit: '件',
-    },
-    {
-      label: '応募数',
-      value: d.applications,
-      icon: <TrendingUp className="w-4 h-4" />,
-      color: 'orange',
-      href: '/candidates',
-      unit: '件',
-    },
-    {
-      label: '面談通過',
-      value: d.passed,
-      icon: <CheckCircle2 className="w-4 h-4" />,
-      color: 'emerald',
-      href: '/interviews',
-      unit: '件',
-      sub: passRate !== null ? `合格率 ${passRate}%` : undefined,
-    },
-  ]
-
   return (
     <div className="card p-4 mb-6">
-      {/* ヘッダー */}
-      <div className="flex items-center justify-between gap-2 flex-wrap" style={{ marginBottom: open ? '1rem' : 0 }}>
+      <div
+        className="flex items-center justify-between gap-2 flex-wrap"
+        style={{ marginBottom: open ? '1rem' : 0 }}
+      >
         <button
           onClick={() => setOpen((v) => !v)}
           className="flex items-center gap-2 hover:opacity-70 transition-opacity"
@@ -161,94 +110,147 @@ export function StatsPanel({ initialMonthly, allTime, initialYear, initialMonth 
             <TrendingUp className="w-4 h-4 text-green-700" />
             実績サマリー
           </h3>
-          <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${open ? '' : '-rotate-90'}`} />
+          <ChevronDown
+            className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${open ? '' : '-rotate-90'}`}
+          />
         </button>
 
-        {open && <div className="flex items-center gap-2 flex-wrap">
-          {/* 月ナビゲーション */}
-          {tab === 'monthly' && (
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg px-1 py-0.5">
-              <button
-                onClick={prevMonth}
-                disabled={loading}
-                className="p-1 rounded hover:bg-white transition-colors text-gray-500 hover:text-gray-700 disabled:opacity-40"
-                title="前の月"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
+        {open && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {tab === 'monthly' && (
+              <div className="flex items-center gap-1 bg-gray-100 rounded-lg px-1 py-0.5">
+                <button
+                  onClick={prevMonth}
+                  disabled={loading}
+                  className="p-1 rounded hover:bg-white transition-colors text-gray-500 hover:text-gray-700 disabled:opacity-40"
+                  title="前の月"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
 
+                <button
+                  onClick={goToCurrentMonth}
+                  className={`px-2 py-1 text-sm font-medium min-w-[90px] text-center transition-colors rounded ${
+                    isCurrentMonth ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
+                  }`}
+                  title="今月に戻る"
+                >
+                  {loading ? (
+                    <span className="inline-block w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto" />
+                  ) : (
+                    monthLabel(year, month)
+                  )}
+                </button>
+
+                <button
+                  onClick={nextMonth}
+                  disabled={loading || isCurrentMonth || isFuture}
+                  className="p-1 rounded hover:bg-white transition-colors text-gray-500 hover:text-gray-700 disabled:opacity-30"
+                  title="次の月"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-center bg-gray-100 rounded-lg p-0.5 text-sm">
               <button
-                onClick={goToCurrentMonth}
-                className={`px-2 py-1 text-sm font-medium min-w-[90px] text-center transition-colors rounded ${
-                  isCurrentMonth ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
+                onClick={() => setTab('monthly')}
+                className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+                  tab === 'monthly'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
                 }`}
-                title="今月に戻る"
               >
-                {loading ? (
-                  <span className="inline-block w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto" />
-                ) : (
-                  monthLabel(year, month)
-                )}
+                月次
               </button>
-
               <button
-                onClick={nextMonth}
-                disabled={loading || isCurrentMonth || isFuture}
-                className="p-1 rounded hover:bg-white transition-colors text-gray-500 hover:text-gray-700 disabled:opacity-30"
-                title="次の月"
+                onClick={() => setTab('allTime')}
+                className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+                  tab === 'allTime'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
               >
-                <ChevronRight className="w-4 h-4" />
+                全期間
               </button>
             </div>
-          )}
-
-          {/* 月次 / 全期間 トグル */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-0.5 text-sm">
-            <button
-              onClick={() => setTab('monthly')}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
-                tab === 'monthly'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              月次
-            </button>
-            <button
-              onClick={() => setTab('allTime')}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
-                tab === 'allTime'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              全期間
-            </button>
           </div>
-        </div>}
+        )}
       </div>
 
-      {/* 統計カード */}
-      {open && <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-        {stats.map((s) => {
-          const c = colorMap[s.color]
-          return (
-            <Link
-              key={s.label}
-              href={s.href}
-              className={`rounded-xl border ${c.border} ${c.bg} p-3 hover:opacity-80 transition-opacity text-center ${loading && tab === 'monthly' ? 'opacity-50' : ''}`}
-            >
-              <div className={`${c.text} flex justify-center mb-1`}>{s.icon}</div>
-              <p className={`text-2xl font-bold ${c.text}`}>{s.value}</p>
-              <p className={`text-xs font-medium ${c.text} opacity-80`}>{s.unit}</p>
-              <p className="text-xs text-gray-500 mt-0.5 leading-tight">{s.label}</p>
-              {s.sub && (
-                <p className={`text-xs font-semibold ${c.text} mt-0.5`}>{s.sub}</p>
-              )}
-            </Link>
-          )
-        })}
-      </div>}
+      {open && (
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          {[
+            {
+              label: tab === 'allTime' ? '人材総数' : '新規人材',
+              value: d.candidates,
+              icon: <Users className="w-4 h-4" />,
+              color: 'blue',
+              href: '/candidates',
+              unit: '名',
+            },
+            {
+              label: tab === 'allTime' ? '案件総数' : '新規案件',
+              value: d.projects,
+              icon: <Briefcase className="w-4 h-4" />,
+              color: 'indigo',
+              href: '/projects',
+              unit: '件',
+            },
+            {
+              label: '面談数',
+              value: d.interviews,
+              icon: <CalendarDays className="w-4 h-4" />,
+              color: 'green',
+              href: '/interviews',
+              unit: '件',
+            },
+            {
+              label: '提案数',
+              value: d.proposals,
+              icon: <Send className="w-4 h-4" />,
+              color: 'yellow',
+              href: '/candidates',
+              unit: '件',
+            },
+            {
+              label: '応募数',
+              value: d.applications,
+              icon: <TrendingUp className="w-4 h-4" />,
+              color: 'orange',
+              href: '/candidates',
+              unit: '件',
+            },
+            {
+              label: '面談通過',
+              value: d.passed,
+              icon: <CheckCircle2 className="w-4 h-4" />,
+              color: 'emerald',
+              href: '/interviews',
+              unit: '件',
+              sub: passRate !== null ? `合格率 ${passRate}%` : undefined,
+            },
+          ].map((s) => {
+            const c = colorMap[s.color]
+            return (
+              <Link
+                key={s.label}
+                href={s.href}
+                className={`rounded-xl border ${c.border} ${c.bg} p-3 hover:opacity-80 transition-opacity text-center ${loading && tab === 'monthly' ? 'opacity-50' : ''}`}
+              >
+                <div className={`${c.text} flex justify-center mb-1`}>{s.icon}</div>
+                <p className={`text-2xl font-bold ${c.text}`}>{s.value}</p>
+                <p className={`text-xs font-medium ${c.text} opacity-80`}>{s.unit}</p>
+                <p className="text-xs text-gray-500 mt-0.5 leading-tight">{s.label}</p>
+                {s.sub && (
+                  <p className={`text-xs font-semibold ${c.text} mt-0.5`}>{s.sub}</p>
+                )}
+              </Link>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
