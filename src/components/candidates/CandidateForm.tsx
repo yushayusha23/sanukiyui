@@ -101,27 +101,15 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
 
           <div>
             <label className="form-label">所属会社</label>
-            <input
-              name="company"
-              defaultValue={candidate?.company ?? ''}
-              className="form-input"
-              placeholder="株式会社〇〇"
-            />
+            <select name="clientId" defaultValue={candidate?.clientId ?? ''} className="form-select">
+              <option value="">未設定</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}{c.codeName ? ` (${c.codeName})` : ''}
+                </option>
+              ))}
+            </select>
           </div>
-
-          {clients.length > 0 && (
-            <div>
-              <label className="form-label">クライアント紐づけ</label>
-              <select name="clientId" defaultValue={candidate?.clientId ?? ''} className="form-select">
-                <option value="">紐づけなし</option>
-                {clients.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}{c.codeName ? ` (${c.codeName})` : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
 
           <div className="sm:col-span-2">
             <label className="form-label">居住地</label>

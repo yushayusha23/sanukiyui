@@ -18,6 +18,7 @@ async function getCandidate(id: string) {
     where: { id },
     include: {
       skillDetails: true,
+      client: { select: { id: true, name: true, codeName: true } },
       documents: { orderBy: { createdAt: 'desc' } },
       interviews: {
         include: { project: true },
@@ -149,7 +150,11 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
             <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
               <div>
                 <dt className="text-gray-500">所属会社</dt>
-                <dd className="font-medium">{candidate.company ?? '-'}</dd>
+                <dd className="font-medium">
+                  {candidate.client
+                    ? `${candidate.client.name}${candidate.client.codeName ? ` (${candidate.client.codeName})` : ''}`
+                    : '-'}
+                </dd>
               </div>
               <div>
                 <dt className="text-gray-500">希望勤務形態</dt>
