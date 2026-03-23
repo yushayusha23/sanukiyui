@@ -2,7 +2,13 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { requireAuth } from '@/lib/auth'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+
+async function requireAuth() {
+  const session = await getServerSession(authOptions)
+  if (!session) throw new Error('Unauthorized')
+}
 
 export async function createHandoverNote(formData: FormData) {
   await requireAuth()
