@@ -161,6 +161,18 @@ model Match {
   @@unique([candidateId, projectId])
 }
 
+// 引き継ぎメモ
+// status: PENDING | DONE
+model HandoverNote {
+  id        String   @id @default(cuid())
+  title     String
+  body      String?
+  status    String   @default("PENDING")
+  assignee  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // テンプレート
 // category: LINE | EMAIL | PHONE | OTHER
 model Template {

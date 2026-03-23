@@ -12,6 +12,7 @@ import {
   MessageSquare,
   BarChart2,
   FileText,
+  ClipboardList,
   LogOut,
   X,
 } from 'lucide-react'
@@ -25,6 +26,7 @@ const navItems = [
   { href: '/calendar', label: '面談カレンダー', icon: CalendarDays },
   { href: '/progress', label: '進捗管理', icon: BarChart2 },
   { href: '/templates', label: 'テンプレート', icon: FileText },
+  { href: '/handover', label: '引き継ぎ', icon: ClipboardList },
 ]
 
 interface SidebarProps {
