@@ -23,7 +23,6 @@ const navItems = [
   { href: '/projects', label: '案件管理', icon: Briefcase },
   { href: '/interviews', label: '面談管理', icon: Calendar },
   { href: '/calendar', label: '面談カレンダー', icon: CalendarDays },
-  { href: '/communications', label: '連絡履歴', icon: MessageSquare },
   { href: '/progress', label: '進捗管理', icon: BarChart2 },
   { href: '/templates', label: 'テンプレート', icon: FileText },
 ]
