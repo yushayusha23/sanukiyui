@@ -25,7 +25,7 @@ const navItems = [
   { href: '/projects', label: '案件管理', icon: Briefcase },
   { href: '/interviews', label: '面談管理', icon: Calendar },
   { href: '/calendar', label: '面談カレンダー', icon: CalendarDays },
-  { href: '/progress', label: '進捗管理', icon: BarChart2 },
+  // { href: '/progress', label: '進捗管理', icon: BarChart2 },
   { href: '/templates', label: 'テンプレート', icon: FileText },
   { href: '/clients', label: 'クライアント', icon: Building2 },
   { href: '/handover', label: '引き継ぎ', icon: ClipboardList },
