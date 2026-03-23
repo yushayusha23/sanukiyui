@@ -52,20 +52,20 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       {/* サイドバー本体 */}
       <aside
         className={cn(
-          'fixed top-0 left-0 h-full w-64 bg-blue-900 text-white z-50 flex flex-col transition-transform duration-300',
+          'fixed top-0 left-0 h-full w-64 bg-green-950 text-white z-50 flex flex-col transition-transform duration-300',
           'lg:translate-x-0 lg:static lg:z-auto',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         {/* ヘッダー */}
-        <div className="flex items-center justify-between p-4 border-b border-blue-800">
+        <div className="flex items-center justify-between p-4 border-b border-green-900">
           <div>
-            <h1 className="text-sm font-bold leading-tight">人材BPO</h1>
-            <p className="text-xs text-blue-300">管理システム</p>
+            <h1 className="text-sm font-bold leading-tight">🦕 人材BPO</h1>
+            <p className="text-xs text-green-400">管理システム</p>
           </div>
           <button
             onClick={onClose}
-            className="lg:hidden p-1 rounded-lg hover:bg-blue-800 transition-colors"
+            className="lg:hidden p-1 rounded-lg hover:bg-green-900 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -87,8 +87,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-blue-700 text-white'
-                    : 'text-blue-200 hover:bg-blue-800 hover:text-white'
+                    ? 'bg-green-700 text-white'
+                    : 'text-green-300 hover:bg-green-900 hover:text-white'
                 )}
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
@@ -99,10 +99,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </nav>
 
         {/* ログアウト */}
-        <div className="p-3 border-t border-blue-800">
+        <div className="p-3 border-t border-green-900">
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-blue-200 hover:bg-blue-800 hover:text-white transition-colors w-full"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-green-300 hover:bg-green-900 hover:text-white transition-colors w-full"
           >
             <LogOut className="w-5 h-5" />
             ログアウト

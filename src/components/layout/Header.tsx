@@ -26,7 +26,7 @@ export function Header({ title, onMenuClick }: HeaderProps) {
         <div className="hidden sm:block text-right">
           <p className="text-sm font-medium text-gray-900">{session?.user?.name}</p>
         </div>
-        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+        <div className="w-8 h-8 bg-green-700 rounded-full flex items-center justify-center text-white text-sm font-bold">
           {session?.user?.name?.[0] ?? 'U'}
         </div>
       </div>
