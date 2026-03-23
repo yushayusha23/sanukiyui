@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ユーザー
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("staff") // admin, staff
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// 求職者
+// status: APPLIED | REGISTERED | SKILLSHEET_RECV | INTRODUCING |
+//         INTERVIEW_DATE_COLLECTING | INTERVIEW_DATE_CONFIRMED |
+//         INTERVIEWED | PASSED | FAILED | ON_HOLD
+model Candidate {
+  id                     String    @id @default(cuid())
+  name                   String
+  age                    Int?
+  company                String?   // 所属会社
+  address                String?
+  preferredWorkStyle     String?   // フルリモート | 一部出社 | 出社
+  desiredHourlyRate      Int?
+  minimumHourlyRate      Int?
+  workHistory            String?
+  availableStartDate     DateTime?
+  confirmedInterviewDate DateTime?
+  status                 String    @default("APPLIED")
+  notes                  String?
+  lineUserId             String?   // LINE ユーザーID (Uxxxxx...)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  skillDetails   CandidateSkillDetail?
+  documents      CandidateDocument[]
+  interviews     Interview[]
+  communications Communication[]
+  matches        Match[]
+}
+
+// 求職者スキル詳細
+model CandidateSkillDetail {
+  id                 String    @id @default(cuid())
+  candidateId        String    @unique
+  candidate          Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  isYears            Float?    // インサイドセールス経験年数
+  ifYears            Float?    // インフォメーション経験年数
+  saasYears          Float?    // SaaS経験年数
+  otherBpoExperience String?   // その他BPO関連経験
+  tools              String?   // 使用ツール（カンマ区切り）
+  strengths          String?   // 得意領域
+  freeSkillNote      String?   // 自由記述スキルメモ
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+// 求職者書類（スキルシートPDF等）
+model CandidateDocument {
+  id          String    @id @default(cuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  fileName    String
+  filePath    String
+  fileType    String    @default("pdf")
+  createdAt   DateTime  @default(now())
+}
+
+// 案件
+// status: RECRUITING | PROPOSING | INTERVIEWING | DECIDED | CLOSED
+model Project {
+  id                String   @id @default(cuid())
+  title             String
+  clientName        String?
+  sourceClientName  String?
+  description       String?
+  requiredSkills    String?
+  workStyle         String?  // フルリモート | 一部出社 | 出社
+  workHours         String?  // 160時間 | 120時間 | 時短 | フルタイム
+  desiredRate       Int?
+  minimumRate       Int?
+  workConditions    String?
+  recruitmentStatus String?
+  status            String   @default("RECRUITING")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  interviews        Interview[]
+  matches           Match[]
+  receivedProjects  ReceivedProject[]
+}
+
+// もらった案件（受信版）
+model ReceivedProject {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceName  String   // 送り元会社名
+  title       String?  // 原文タイトル（自社版と異なる場合）
+  description String?  // 原文内容
+  memo        String?  // メモ
+  receivedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 面談
+// result: PASSED | FAILED | ON_HOLD | PENDING
+model Interview {
+  id                String    @id @default(cuid())
+  candidateId       String
+  candidate         Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  projectId         String?
+  project           Project?  @relation(fields: [projectId], references: [id])
+  interviewDateTime DateTime
+  interviewer       String?
+  memo              String?
+  evaluation        String?
+  result            String?   @default("PENDING")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+// 連絡履歴
+// type: PHONE | EMAIL | LINE | SMS
+model Communication {
+  id              String    @id @default(cuid())
+  candidateId     String
+  candidate       Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  type            String    @default("PHONE")
+  contactedAt     DateTime
+  memo            String?
+  replied         Boolean   @default(false)
+  nextContactDate DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// マッチング
+// status: SUGGESTED | ACCEPTED | REJECTED
+model Match {
+  id             String    @id @default(cuid())
+  candidateId    String
+  candidate      Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  projectId      String
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  score          Int       @default(0)
+  matchedReasons String?   // JSON文字列: ["スキル一致", "単価範囲内", ...]
+  status         String    @default("SUGGESTED")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([candidateId, projectId])
+}
+
+// テンプレート
+// category: LINE | EMAIL | PHONE | OTHER
+model Template {
+  id        String   @id @default(cuid())
+  title     String
+  category  String   @default("OTHER")
+  body      String
+  memo      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,189 @@
+import { prisma } from '@/lib/prisma'
+import { DashboardShell } from '@/components/layout/DashboardShell'
+import { CandidateStatusBadge, WorkStyleBadge } from '@/components/ui/StatusBadge'
+import { formatDate, formatDateTime, formatRate } from '@/lib/utils'
+import Link from 'next/link'
+import { Plus, Search } from 'lucide-react'
+import { CANDIDATE_STATUS } from '@/types'
+
+interface SearchParams {
+  q?: string
+  status?: string
+  sort?: string
+}
+
+async function getCandidates(params: SearchParams) {
+  const where: Record<string, unknown> = {}
+
+  if (params.q) {
+    const words = params.q.trim().split(/\s+/).filter(Boolean)
+    where.AND = words.map((word) => ({
+      OR: [
+        { name: { contains: word } },
+        { address: { contains: word } },
+        { company: { contains: word } },
+        { notes: { contains: word } },
+        { skillDetails: { freeSkillNote: { contains: word } } },
+        { skillDetails: { tools: { contains: word } } },
+        { skillDetails: { strengths: { contains: word } } },
+        { skillDetails: { otherBpoExperience: { contains: word } } },
+      ],
+    }))
+  }
+
+  if (params.status) {
+    where.status = params.status
+  }
+
+  const orderBy: Record<string, string> = {}
+  switch (params.sort) {
+    case 'name': orderBy.name = 'asc'; break
+    case 'status': orderBy.status = 'asc'; break
+    case 'interview': orderBy.confirmedInterviewDate = 'asc'; break
+    case 'available': orderBy.availableStartDate = 'asc'; break
+    default: orderBy.updatedAt = 'desc'
+  }
+
+  return prisma.candidate.findMany({
+    where,
+    include: { skillDetails: true },
+    orderBy,
+  })
+}
+
+export default async function CandidatesPage({
+  searchParams,
+}: {
+  searchParams: SearchParams
+}) {
+  const candidates = await getCandidates(searchParams)
+
+  return (
+    <DashboardShell title="人材管理">
+      <div className="space-y-4">
+        {/* ヘッダー操作バー */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <form className="flex-1 flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                name="q"
+                defaultValue={searchParams.q}
+                placeholder="氏名・スキル・住所で検索..."
+                className="form-input pl-9"
+              />
+            </div>
+            <select name="status" defaultValue={searchParams.status ?? ''} className="form-select w-auto">
+              <option value="">全ステータス</option>
+              {Object.entries(CANDIDATE_STATUS).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+            <select name="sort" defaultValue={searchParams.sort ?? ''} className="form-select w-auto hidden sm:block">
+              <option value="">最終更新順</option>
+              <option value="name">氏名順</option>
+              <option value="status">ステータス順</option>
+              <option value="interview">面談日順</option>
+              <option value="available">稼働開始日順</option>
+            </select>
+            <button type="submit" className="btn-secondary">絞込</button>
+          </form>
+          <Link href="/candidates/new" className="btn-primary whitespace-nowrap">
+            <Plus className="w-4 h-4" />
+            新規登録
+          </Link>
+        </div>
+
+        {/* 件数表示 */}
+        <p className="text-sm text-gray-500">
+          {candidates.length}件
+          {searchParams.q && ` 「${searchParams.q}」の検索結果`}
+          {searchParams.status && ` / ${CANDIDATE_STATUS[searchParams.status as keyof typeof CANDIDATE_STATUS] ?? searchParams.status}`}
+        </p>
+
+        {/* テーブル (デスクトップ) */}
+        <div className="card hidden md:block overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">氏名</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">所属会社</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">年齢</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">居住地</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">希望勤務形態</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">希望単価</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">ステータス</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">面談確定日</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">稼働開始日</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">最終更新</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {candidates.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-8 text-center text-gray-400">
+                      求職者が見つかりません
+                    </td>
+                  </tr>
+                ) : (
+                  candidates.map((c) => (
+                    <tr key={c.id} className="hover:bg-blue-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <Link href={`/candidates/${c.id}`} className="font-medium text-blue-700 hover:underline">
+                          {c.name}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">{c.company ?? '-'}</td>
+                      <td className="px-4 py-3 text-gray-600">{c.age ? `${c.age}歳` : '-'}</td>
+                      <td className="px-4 py-3 text-gray-600">{c.address ?? '-'}</td>
+                      <td className="px-4 py-3">
+                        <WorkStyleBadge style={c.preferredWorkStyle} />
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">{formatRate(c.desiredHourlyRate)}</td>
+                      <td className="px-4 py-3">
+                        <CandidateStatusBadge status={c.status} />
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">{formatDate(c.confirmedInterviewDate)}</td>
+                      <td className="px-4 py-3 text-gray-600">{formatDate(c.availableStartDate)}</td>
+                      <td className="px-4 py-3 text-gray-400 text-xs">{formatDate(c.updatedAt)}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* カードリスト (モバイル) */}
+        <div className="md:hidden space-y-3">
+          {candidates.length === 0 ? (
+            <div className="card p-6 text-center text-gray-400">求職者が見つかりません</div>
+          ) : (
+            candidates.map((c) => (
+              <Link key={c.id} href={`/candidates/${c.id}`} className="card p-4 block hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <p className="font-semibold text-gray-900">{c.name}</p>
+                    <p className="text-sm text-gray-500">{c.company ?? ''}{c.age ? `　${c.age}歳` : ''}</p>
+                  </div>
+                  <CandidateStatusBadge status={c.status} />
+                </div>
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <WorkStyleBadge style={c.preferredWorkStyle} />
+                  <span>{formatRate(c.desiredHourlyRate)}</span>
+                </div>
+                {c.confirmedInterviewDate && (
+                  <p className="text-xs text-blue-600 mt-1">
+                    面談: {formatDateTime(c.confirmedInterviewDate)}
+                  </p>
+                )}
+              </Link>
+            ))
+          )}
+        </div>
+      </div>
+    </DashboardShell>
+  )
+}
