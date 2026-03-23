@@ -161,6 +161,20 @@ model Match {
   @@unique([candidateId, projectId])
 }
 
+// クライアント管理
+// type: TALENT | PROJECT | BOTH
+model Client {
+  id           String   @id @default(cuid())
+  name         String   // 会社名
+  codeName     String?  // ポケモンコードネーム
+  type         String   @default("BOTH") // TALENT=人材元 | PROJECT=案件元 | BOTH=両方
+  caution      Boolean  @default(false)  // 要注意フラグ
+  cautionNote  String?  // 注意内容
+  memo         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
 // 引き継ぎメモ
 // status: PENDING | DONE
 model HandoverNote {
