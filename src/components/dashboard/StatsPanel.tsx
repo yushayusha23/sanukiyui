@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Users, Briefcase, CalendarDays, Send, CheckCircle2, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Users, Briefcase, CalendarDays, Send, CheckCircle2, TrendingUp, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
 
 export type StatsData = {
   candidates: number
@@ -42,6 +42,7 @@ const colorMap: Record<string, { bg: string; text: string; border: string }> = {
 
 export function StatsPanel({ initialMonthly, allTime, initialYear, initialMonth }: Props) {
   const FALLBACK: StatsData = { candidates: 0, projects: 0, interviews: 0, proposals: 0, applications: 0, passed: 0, failed: 0 }
+  const [open, setOpen] = useState(true)
   const [tab, setTab] = useState<Tab>('monthly')
   const [year, setYear] = useState(initialYear ?? new Date().getFullYear())
   const [month, setMonth] = useState(initialMonth ?? new Date().getMonth() + 1)
@@ -98,7 +99,7 @@ export function StatsPanel({ initialMonthly, allTime, initialYear, initialMonth 
 
   const stats = [
     {
-      label: tab === 'allTime' ? '求職者総数' : '新規求職者',
+      label: tab === 'allTime' ? '人材総数' : '新規人材',
       value: d.candidates,
       icon: <Users className="w-4 h-4" />,
       color: 'blue',
@@ -151,13 +152,19 @@ export function StatsPanel({ initialMonthly, allTime, initialYear, initialMonth 
   return (
     <div className="card p-4 mb-6">
       {/* ヘッダー */}
-      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
-        <h3 className="section-title mb-0 flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-blue-600" />
-          実績サマリー
-        </h3>
+      <div className="flex items-center justify-between gap-2 flex-wrap" style={{ marginBottom: open ? '1rem' : 0 }}>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+        >
+          <h3 className="section-title mb-0 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-green-700" />
+            実績サマリー
+          </h3>
+          <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${open ? '' : '-rotate-90'}`} />
+        </button>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        {open && <div className="flex items-center gap-2 flex-wrap">
           {/* 月ナビゲーション */}
           {tab === 'monthly' && (
             <div className="flex items-center gap-1 bg-gray-100 rounded-lg px-1 py-0.5">
@@ -218,11 +225,11 @@ export function StatsPanel({ initialMonthly, allTime, initialYear, initialMonth 
               全期間
             </button>
           </div>
-        </div>
+        </div>}
       </div>
 
       {/* 統計カード */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+      {open && <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
         {stats.map((s) => {
           const c = colorMap[s.color]
           return (
@@ -241,7 +248,7 @@ export function StatsPanel({ initialMonthly, allTime, initialYear, initialMonth 
             </Link>
           )
         })}
-      </div>
+      </div>}
     </div>
   )
 }

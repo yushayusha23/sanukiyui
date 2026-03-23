@@ -170,7 +170,7 @@ export default async function DashboardPage() {
       {/* KPI カード */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard
-          title="🦕 求職者総数"
+          title="🦕 人材総数"
           value={data.candidateCount}
           icon={<span className="text-2xl">🦕</span>}
           color="green"
@@ -206,7 +206,7 @@ export default async function DashboardPage() {
           <div className="card p-4">
             <h3 className="section-title flex items-center gap-2">
               <span>🦕</span>
-              求職者ステータス別件数
+              人材ステータス別件数
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {statusOrder.map((status) => {
@@ -269,12 +269,12 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          {/* 最近更新した求職者 */}
+          {/* 最近更新した人材 */}
           <div className="card p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="section-title flex items-center gap-2 mb-0">
                 <span>🦕</span>
-                最近更新した求職者
+                最近更新した人材
               </h3>
               <Link href="/candidates" className="text-xs text-green-700 hover:underline flex items-center gap-1">
                 全て見る <ArrowRight className="w-3 h-3" />

@@ -85,7 +85,7 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
               {candidates.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="px-4 py-6 text-center text-gray-400">
-                    該当する求職者がいません
+                    該当する人材がいません
                   </td>
                 </tr>
               ) : (
@@ -116,7 +116,7 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
       {/* カードリスト (モバイル) */}
       <div className="md:hidden space-y-3">
         {candidates.length === 0 ? (
-          <p className="text-sm text-gray-400 py-4 text-center">該当する求職者がいません</p>
+          <p className="text-sm text-gray-400 py-4 text-center">該当する人材がいません</p>
         ) : (
           candidates.map((c) => (
             <Link key={c.id} href={`/candidates/${c.id}`} className="card p-4 block hover:shadow-md transition-shadow">
@@ -212,7 +212,7 @@ export default async function CandidatesPage({
         {active.length === 0 && passed.length === 0 && onHold.length === 0 && failed.length === 0 && (
           <div className="card p-8 text-center text-gray-400">
             <p className="text-4xl mb-2">🦕</p>
-            <p>求職者が見つかりません</p>
+            <p>人材が見つかりません</p>
           </div>
         )}
 
