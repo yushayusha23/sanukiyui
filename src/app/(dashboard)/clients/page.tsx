@@ -79,7 +79,7 @@ function ClientCard({ client }: {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-gray-900">{client.name}</span>
+            <Link href={`/clients/${client.id}`} className="font-semibold text-blue-700 hover:underline">{client.name}</Link>
             {client.codeName && (
               <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">
                 {client.codeName}

@@ -65,5 +65,6 @@ function extractProjectData(formData: FormData) {
     workConditions: getString('workConditions'),
     recruitmentStatus: getString('recruitmentStatus'),
     status: getString('status') || 'RECRUITING',
+    clientId: getString('clientId') || null,
   }
 }

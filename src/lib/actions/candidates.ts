@@ -32,6 +32,7 @@ export async function createCandidate(formData: FormData) {
       status: data.status || 'APPLIED',
       notes: data.notes,
       lineUserId: data.lineUserId,
+      clientId: data.clientId || null,
     },
   })
 
@@ -73,6 +74,7 @@ export async function updateCandidate(id: string, formData: FormData) {
       status: data.status ?? undefined,
       notes: data.notes,
       lineUserId: data.lineUserId,
+      clientId: data.clientId || null,
     },
   })
 
@@ -149,6 +151,7 @@ function extractCandidateData(formData: FormData) {
     status: getString('status'),
     notes: getString('notes'),
     lineUserId: getString('lineUserId'),
+    clientId: getString('clientId'),
     isYears: getFloat('isYears'),
     ifYears: getFloat('ifYears'),
     saasYears: getFloat('saasYears'),

@@ -37,6 +37,7 @@ model Candidate {
   status                 String    @default("APPLIED")
   notes                  String?
   lineUserId             String?   // LINE ユーザーID (Uxxxxx...)
+  clientId               String?   // クライアント紐づけ
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
@@ -45,6 +46,7 @@ model Candidate {
   interviews     Interview[]
   communications Communication[]
   matches        Match[]
+  client         Client?   @relation(fields: [clientId], references: [id])
 }
 
 // 求職者スキル詳細
@@ -90,12 +92,14 @@ model Project {
   workConditions    String?
   recruitmentStatus String?
   status            String   @default("RECRUITING")
+  clientId          String?  // クライアント紐づけ
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   interviews        Interview[]
   matches           Match[]
   receivedProjects  ReceivedProject[]
+  client            Client?  @relation(fields: [clientId], references: [id])
 }
 
 // もらった案件（受信版）
@@ -173,6 +177,9 @@ model Client {
   memo         String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  candidates   Candidate[]
+  projects     Project[]
 }
 
 // 引き継ぎメモ

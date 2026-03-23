@@ -18,15 +18,19 @@ type Project = {
   workConditions?: string | null
   recruitmentStatus?: string | null
   status: string
+  clientId?: string | null
 }
+
+type ClientOption = { id: string; name: string; codeName: string | null }
 
 interface ProjectFormProps {
   project?: Project
   action: (formData: FormData) => Promise<void>
   backHref: string
+  clients?: ClientOption[]
 }
 
-export function ProjectForm({ project, action, backHref }: ProjectFormProps) {
+export function ProjectForm({ project, action, backHref, clients = [] }: ProjectFormProps) {
   const [pending, startTransition] = useTransition()
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -62,6 +66,20 @@ export function ProjectForm({ project, action, backHref }: ProjectFormProps) {
               placeholder="株式会社〇〇"
             />
           </div>
+
+          {clients.length > 0 && (
+            <div>
+              <label className="form-label">クライアント紐づけ</label>
+              <select name="clientId" defaultValue={project?.clientId ?? ''} className="form-select">
+                <option value="">紐づけなし</option>
+                {clients.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}{c.codeName ? ` (${c.codeName})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="form-label">人材元クライアント名</label>

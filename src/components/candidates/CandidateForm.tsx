@@ -29,13 +29,17 @@ type Candidate = {
   status: string
   notes?: string | null
   lineUserId?: string | null
+  clientId?: string | null
   skillDetails?: SkillDetails | null
 }
+
+type ClientOption = { id: string; name: string; codeName: string | null }
 
 interface CandidateFormProps {
   candidate?: Candidate
   action: (formData: FormData) => Promise<void>
   backHref: string
+  clients?: ClientOption[]
 }
 
 function toDateInputValue(date?: Date | null): string {
@@ -52,7 +56,7 @@ function toDateTimeInputValue(date?: Date | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-export function CandidateForm({ candidate, action, backHref }: CandidateFormProps) {
+export function CandidateForm({ candidate, action, backHref, clients = [] }: CandidateFormProps) {
   const [pending, startTransition] = useTransition()
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -104,6 +108,20 @@ export function CandidateForm({ candidate, action, backHref }: CandidateFormProp
               placeholder="株式会社〇〇"
             />
           </div>
+
+          {clients.length > 0 && (
+            <div>
+              <label className="form-label">クライアント紐づけ</label>
+              <select name="clientId" defaultValue={candidate?.clientId ?? ''} className="form-select">
+                <option value="">紐づけなし</option>
+                {clients.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}{c.codeName ? ` (${c.codeName})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="sm:col-span-2">
             <label className="form-label">居住地</label>

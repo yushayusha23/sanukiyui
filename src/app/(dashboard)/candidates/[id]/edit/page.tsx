@@ -5,10 +5,13 @@ import { CandidateForm } from '@/components/candidates/CandidateForm'
 import { updateCandidate } from '@/lib/actions/candidates'
 
 export default async function EditCandidatePage({ params }: { params: { id: string } }) {
-  const candidate = await prisma.candidate.findUnique({
-    where: { id: params.id },
-    include: { skillDetails: true },
-  })
+  const [candidate, clients] = await Promise.all([
+    prisma.candidate.findUnique({
+      where: { id: params.id },
+      include: { skillDetails: true },
+    }),
+    prisma.client.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true, codeName: true } }),
+  ])
   if (!candidate) notFound()
 
   const updateAction = updateCandidate.bind(null, params.id)
@@ -19,6 +22,7 @@ export default async function EditCandidatePage({ params }: { params: { id: stri
         candidate={candidate}
         action={updateAction}
         backHref={`/candidates/${params.id}`}
+        clients={clients}
       />
     </DashboardShell>
   )

@@ -5,7 +5,10 @@ import { ProjectForm } from '@/components/projects/ProjectForm'
 import { updateProject } from '@/lib/actions/projects'
 
 export default async function EditProjectPage({ params }: { params: { id: string } }) {
-  const project = await prisma.project.findUnique({ where: { id: params.id } })
+  const [project, clients] = await Promise.all([
+    prisma.project.findUnique({ where: { id: params.id } }),
+    prisma.client.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true, codeName: true } }),
+  ])
   if (!project) notFound()
 
   const updateAction = updateProject.bind(null, params.id)
@@ -16,6 +19,7 @@ export default async function EditProjectPage({ params }: { params: { id: string
         project={project}
         action={updateAction}
         backHref={`/projects/${params.id}`}
+        clients={clients}
       />
     </DashboardShell>
   )
