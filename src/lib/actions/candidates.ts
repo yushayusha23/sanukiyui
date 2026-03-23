@@ -70,7 +70,7 @@ export async function updateCandidate(id: string, formData: FormData) {
       workHistory: data.workHistory,
       availableStartDate: data.availableStartDate,
       confirmedInterviewDate: data.confirmedInterviewDate,
-      status: data.status,
+      status: data.status ?? undefined,
       notes: data.notes,
       lineUserId: data.lineUserId,
     },
