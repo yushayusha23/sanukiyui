@@ -98,6 +98,11 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           })}
         </nav>
 
+        {/* 恐竜デコ */}
+        <div className="px-4 py-2 text-center">
+          <p className="text-xs text-green-700 tracking-widest">🦕 🦖 🦕 🦖 🦕</p>
+        </div>
+
         {/* ログアウト */}
         <div className="p-3 border-t border-green-900">
           <button

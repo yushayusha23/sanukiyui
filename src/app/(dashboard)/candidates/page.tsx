@@ -210,7 +210,10 @@ export default async function CandidatesPage({
         )}
 
         {active.length === 0 && passed.length === 0 && onHold.length === 0 && failed.length === 0 && (
-          <div className="card p-8 text-center text-gray-400">求職者が見つかりません</div>
+          <div className="card p-8 text-center text-gray-400">
+            <p className="text-4xl mb-2">🦕</p>
+            <p>求職者が見つかりません</p>
+          </div>
         )}
 
         {/* 合格フォルダ */}

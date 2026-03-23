@@ -170,30 +170,30 @@ export default async function DashboardPage() {
       {/* KPI カード */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard
-          title="求職者総数"
+          title="🦕 求職者総数"
           value={data.candidateCount}
-          icon={<Users className="w-6 h-6" />}
-          color="blue"
+          icon={<span className="text-2xl">🦕</span>}
+          color="green"
           href="/candidates"
         />
         <StatCard
-          title="案件総数"
+          title="🦖 案件総数"
           value={data.projectCount}
-          icon={<Briefcase className="w-6 h-6" />}
-          color="indigo"
+          icon={<span className="text-2xl">🦖</span>}
+          color="emerald"
           href="/projects"
         />
         <StatCard
-          title="本日の面談"
+          title="🦴 本日の面談"
           value={data.todayInterviews.length}
-          icon={<Calendar className="w-6 h-6" />}
+          icon={<span className="text-2xl">🦴</span>}
           color="green"
           href="/interviews"
         />
         <StatCard
-          title="要連絡（3日以内）"
+          title="📢 要連絡（3日以内）"
           value={data.pendingNextContacts}
-          icon={<Bell className="w-6 h-6" />}
+          icon={<span className="text-2xl">📢</span>}
           color="yellow"
           href="/communications"
         />
@@ -205,7 +205,7 @@ export default async function DashboardPage() {
           {/* ステータス別件数 */}
           <div className="card p-4">
             <h3 className="section-title flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-blue-600" />
+              <span>🦕</span>
               求職者ステータス別件数
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -216,7 +216,7 @@ export default async function DashboardPage() {
                   <Link
                     key={status}
                     href={`/candidates?status=${status}`}
-                    className="flex items-center justify-between p-2 rounded-lg bg-gray-50 hover:bg-blue-50 transition-colors"
+                    className="flex items-center justify-between p-2 rounded-lg bg-gray-50 hover:bg-green-50 transition-colors"
                   >
                     <CandidateStatusBadge status={status} />
                     <span className="text-lg font-bold text-gray-900 ml-2">{count}</span>
@@ -230,15 +230,15 @@ export default async function DashboardPage() {
           <div className="card p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="section-title flex items-center gap-2 mb-0">
-                <Calendar className="w-4 h-4 text-blue-600" />
+                <span>🦴</span>
                 近日面談予定（7日以内）
               </h3>
-              <Link href="/interviews" className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+              <Link href="/interviews" className="text-xs text-green-700 hover:underline flex items-center gap-1">
                 全て見る <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
             {data.upcomingInterviews.length === 0 ? (
-              <p className="text-sm text-gray-400 py-2">近日の面談予定はありません</p>
+              <p className="text-sm text-gray-400 py-2">🦕 近日の面談予定はありません</p>
             ) : (
               <div className="space-y-2">
                 {data.upcomingInterviews.map((interview) => (
@@ -256,7 +256,7 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-semibold text-blue-600">
+                      <p className="text-sm font-semibold text-green-700">
                         {formatDateTime(interview.interviewDateTime)}
                       </p>
                       {interview.interviewer && (
@@ -273,10 +273,10 @@ export default async function DashboardPage() {
           <div className="card p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="section-title flex items-center gap-2 mb-0">
-                <Users className="w-4 h-4 text-blue-600" />
+                <span>🦕</span>
                 最近更新した求職者
               </h3>
-              <Link href="/candidates" className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+              <Link href="/candidates" className="text-xs text-green-700 hover:underline flex items-center gap-1">
                 全て見る <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
@@ -288,8 +288,8 @@ export default async function DashboardPage() {
                   className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 text-sm font-bold">
-                      {c.name[0]}
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-lg">
+                      🦕
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">{c.name}</p>
@@ -311,11 +311,11 @@ export default async function DashboardPage() {
           {/* 連絡漏れ */}
           <div className="card p-4 border-l-4 border-l-red-400">
             <h3 className="section-title flex items-center gap-2 text-red-700">
-              <AlertCircle className="w-4 h-4" />
+              <span>🦖</span>
               連絡漏れ候補
             </h3>
             {data.overdueContacts.length === 0 ? (
-              <p className="text-sm text-gray-400">連絡漏れはありません ✓</p>
+              <p className="text-sm text-gray-400">🦕 連絡漏れなし！快調です</p>
             ) : (
               <div className="space-y-2">
                 {data.overdueContacts.map((comm) => (
@@ -347,11 +347,11 @@ export default async function DashboardPage() {
           {/* 提案漏れ */}
           <div className="card p-4 border-l-4 border-l-orange-400">
             <h3 className="section-title flex items-center gap-2 text-orange-700">
-              <AlertCircle className="w-4 h-4" />
+              <span>🦖</span>
               提案漏れ候補
             </h3>
             {data.noProposalCandidates.length === 0 ? (
-              <p className="text-sm text-gray-400">提案漏れはありません ✓</p>
+              <p className="text-sm text-gray-400">🦕 提案漏れなし！絶好調です</p>
             ) : (
               <div className="space-y-2">
                 {data.noProposalCandidates.map((c) => (
@@ -383,10 +383,10 @@ export default async function DashboardPage() {
           <div className="card p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="section-title flex items-center gap-2 mb-0">
-                <Briefcase className="w-4 h-4 text-blue-600" />
+                <span>🦖</span>
                 最近の案件
               </h3>
-              <Link href="/projects" className="text-xs text-blue-600 hover:underline">
+              <Link href="/projects" className="text-xs text-green-700 hover:underline">
                 全て
               </Link>
             </div>
@@ -419,13 +419,14 @@ function StatCard({
   title: string
   value: number
   icon: React.ReactNode
-  color: 'blue' | 'indigo' | 'green' | 'yellow'
+  color: 'blue' | 'indigo' | 'green' | 'emerald' | 'yellow'
   href: string
 }) {
   const colors = {
-    blue: 'bg-blue-50 text-blue-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
-    green: 'bg-green-50 text-green-600',
+    blue: 'bg-green-50 text-green-700',
+    indigo: 'bg-emerald-50 text-emerald-700',
+    green: 'bg-green-50 text-green-700',
+    emerald: 'bg-emerald-50 text-emerald-700',
     yellow: 'bg-yellow-50 text-yellow-600',
   }
   return (

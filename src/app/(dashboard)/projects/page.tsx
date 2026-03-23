@@ -200,7 +200,10 @@ export default async function ProjectsPage({
         )}
 
         {active.length === 0 && closed.length === 0 && (
-          <div className="card p-8 text-center text-gray-400">案件が見つかりません</div>
+          <div className="card p-8 text-center text-gray-400">
+            <p className="text-4xl mb-2">🦖</p>
+            <p>案件が見つかりません</p>
+          </div>
         )}
 
         {/* 終了案件フォルダ */}
