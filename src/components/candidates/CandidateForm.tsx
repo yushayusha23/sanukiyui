@@ -1,8 +1,9 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useTransition, useRef } from 'react'
 import Link from 'next/link'
 import { CANDIDATE_STATUS, WORK_STYLE_OPTIONS } from '@/types'
+import { SkillSheetUploader } from './SkillSheetUploader'
 
 type SkillDetails = {
   isYears?: number | null
@@ -58,6 +59,8 @@ function toDateTimeInputValue(date?: Date | null): string {
 
 export function CandidateForm({ candidate, action, backHref, clients = [] }: CandidateFormProps) {
   const [pending, startTransition] = useTransition()
+  const formRef = useRef<HTMLFormElement>(null)
+
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -65,10 +68,39 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
     startTransition(() => action(formData))
   }
 
+  function setField(name: string, value: string) {
+    const el = formRef.current?.elements.namedItem(name)
+    if (el && (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement)) {
+      el.value = value
+    }
+  }
+
+  function handleExtracted(data: { name?: string; age?: number | null; address?: string | null; workHistory?: string | null; isYears?: number | null; fsYears?: number | null; saasYears?: number | null; desiredHourlyRate?: number | null; availableStartDate?: string | null; notes?: string | null; preferredWorkStyle?: string | null }) {
+    if (data.name) setField('name', String(data.name))
+    if (data.age) setField('age', String(data.age))
+    if (data.address) setField('address', String(data.address))
+    if (data.workHistory) setField('workHistory', String(data.workHistory))
+    if (data.isYears != null) setField('isYears', String(data.isYears))
+    if (data.fsYears != null) setField('ifYears', String(data.fsYears))
+    if (data.saasYears != null) setField('saasYears', String(data.saasYears))
+    if (data.desiredHourlyRate) setField('desiredHourlyRate', String(data.desiredHourlyRate))
+    if (data.availableStartDate) setField('availableStartDate', String(data.availableStartDate))
+    if (data.notes) setField('notes', String(data.notes))
+    if (data.preferredWorkStyle) setField('preferredWorkStyle', String(data.preferredWorkStyle))
+  }
+
   const sd = candidate?.skillDetails
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-6 max-w-3xl" suppressHydrationWarning>
+      {/* スキルシート自動入力 */}
+      {!candidate && (
+        <div className="card p-6">
+          <h3 className="section-title">🦕 スキルシートから自動入力</h3>
+          <SkillSheetUploader onExtracted={handleExtracted} />
+        </div>
+      )}
+
       {/* 基本情報 */}
       <div className="card p-6">
         <h3 className="section-title">基本情報</h3>
