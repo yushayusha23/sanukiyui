@@ -45,7 +45,8 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
   const allProjects = await prisma.project.findMany({
     orderBy: { createdAt: 'desc' },
     select: { id: true, title: true, clientName: true, status: true,
-      requiredSkills: true, workStyle: true, workHours: true, desiredRate: true, minimumRate: true },
+      requiredSkills: true, workStyle: true, workHours: true, desiredRate: true, minimumRate: true,
+      isYearsRequired: true, fsYearsRequired: true, saasYearsRequired: true },
   })
   const activeProjects = allProjects.filter((p) =>
     ['RECRUITING', 'PROPOSING'].includes(p.status)

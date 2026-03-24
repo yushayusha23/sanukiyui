@@ -48,6 +48,9 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
       desiredRate: project.desiredRate,
       minimumRate: project.minimumRate,
       requiredSkills: project.requiredSkills,
+      isYearsRequired: project.isYearsRequired ?? null,
+      fsYearsRequired: project.fsYearsRequired ?? null,
+      saasYearsRequired: project.saasYearsRequired ?? null,
     },
     allCandidates.map((c) => ({
       id: c.id,
