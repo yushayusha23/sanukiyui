@@ -197,6 +197,16 @@ model HandoverNote {
   updatedAt DateTime @updatedAt
 }
 
+// 付箋メモ
+// color: yellow | green | pink | blue
+model StickyNote {
+  id        String   @id @default(cuid())
+  content   String
+  color     String   @default("yellow")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // テンプレート
 // category: LINE | EMAIL | PHONE | OTHER
 model Template {

@@ -16,6 +16,7 @@ import {
 import { CANDIDATE_STATUS } from '@/types'
 import { InterviewReminderBanner } from '@/components/calendar/InterviewReminderBanner'
 import { StatsPanel, type StatsData } from '@/components/dashboard/StatsPanel'
+import { StickyNotesPanel } from '@/components/dashboard/StickyNotesPanel'
 
 async function getDashboardData() {
   const now = new Date()
@@ -166,6 +167,9 @@ export default async function DashboardPage() {
         initialYear={data.monthStart.getFullYear()}
         initialMonth={data.monthStart.getMonth() + 1}
       />
+
+      {/* 付箋メモ */}
+      <StickyNotesPanel />
 
       {/* KPI カード */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

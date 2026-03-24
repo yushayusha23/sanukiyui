@@ -16,8 +16,11 @@ import {
   Building2,
   LogOut,
   X,
+  ChevronDown,
+  StickyNote,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useState, useEffect } from 'react'
 
 const navItems = [
   { href: '/', label: 'ダッシュボード', icon: LayoutDashboard },
@@ -38,6 +41,18 @@ interface SidebarProps {
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname()
+  const [memoOpen, setMemoOpen] = useState(false)
+  const [memo, setMemo] = useState('')
+
+  useEffect(() => {
+    const saved = localStorage.getItem('sidebar-memo')
+    if (saved) setMemo(saved)
+  }, [])
+
+  function handleMemoChange(v: string) {
+    setMemo(v)
+    localStorage.setItem('sidebar-memo', v)
+  }
 
   return (
     <>
@@ -101,6 +116,30 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         {/* 恐竜デコ */}
         <div className="px-4 py-2 text-center">
           <p className="text-xs text-green-700 tracking-widest">🦕 🦖 🦕 🦖 🦕</p>
+        </div>
+
+        {/* 社用メモ */}
+        <div className="px-3 pb-2 border-t border-green-900 pt-2">
+          <button
+            onClick={() => setMemoOpen(o => !o)}
+            className="flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-green-300 hover:bg-green-900 hover:text-white transition-colors text-sm font-medium"
+          >
+            <StickyNote className="w-4 h-4 flex-shrink-0" />
+            <span className="flex-1 text-left">社用メモ</span>
+            <ChevronDown className={`w-4 h-4 transition-transform ${memoOpen ? '' : '-rotate-90'}`} />
+          </button>
+          {memoOpen && (
+            <div className="mt-2">
+              <textarea
+                value={memo}
+                onChange={e => handleMemoChange(e.target.value)}
+                placeholder="メモを入力..."
+                rows={5}
+                className="w-full text-xs bg-green-900 text-green-100 placeholder-green-600 rounded-lg p-2 resize-none focus:outline-none focus:ring-1 focus:ring-green-500 border border-green-800"
+              />
+              <p className="text-xs text-green-700 mt-1 text-right">自動保存</p>
+            </div>
+          )}
         </div>
 
         {/* ログアウト */}
