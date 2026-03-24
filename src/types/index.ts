@@ -124,6 +124,9 @@ export type ProjectWithCounts = {
   requiredSkills: string | null
   workStyle: string | null
   workHours: string | null
+  rateType: string | null
+  rateMin: number | null
+  rateMax: number | null
   desiredRate: number | null
   minimumRate: number | null
   workConditions: string | null

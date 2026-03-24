@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { AlertTriangle, ChevronDown, ChevronRight, Copy, Check, ExternalLink, Folder, FolderX } from 'lucide-react'
 import { ProjectStatusBadge, WorkStyleBadge } from '@/components/ui/StatusBadge'
-import { formatDate, formatRate } from '@/lib/utils'
+import { formatDate, formatRateNew } from '@/lib/utils'
 
 type ReceivedProject = {
   id: string
@@ -24,6 +24,9 @@ type Project = {
   requiredSkills: string | null
   workStyle: string | null
   workHours: string | null
+  rateType: string | null
+  rateMin: number | null
+  rateMax: number | null
   desiredRate: number | null
   minimumRate: number | null
   workConditions: string | null
@@ -66,8 +69,7 @@ function buildProjectText(p: Project) {
     `【案件名】${p.title}`,
     p.workStyle ? `【勤務形態】${p.workStyle}` : null,
     p.workHours ? `【稼働時間】${p.workHours}` : null,
-    p.desiredRate ? `【希望単価】${formatRate(p.desiredRate)}` : null,
-    p.minimumRate ? `【最低単価】${formatRate(p.minimumRate)}` : null,
+    (p.rateMin || p.desiredRate) ? `【単価】${formatRateNew(p.rateType, p.rateMin ?? p.desiredRate, p.rateMax)}` : null,
     p.requiredSkills ? `【必須スキル】\n${p.requiredSkills}` : null,
     p.description ? `【詳細】\n${p.description}` : null,
     p.workConditions ? `【勤務条件】\n${p.workConditions}` : null,
@@ -118,7 +120,7 @@ function ProjectRow({ p }: { p: Project }) {
         </div>
         <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
           <WorkStyleBadge style={p.workStyle} />
-          <span className="text-xs text-gray-500">{formatRate(p.desiredRate)}</span>
+          <span className="text-xs text-gray-500">{formatRateNew(p.rateType, p.rateMin ?? p.desiredRate, p.rateMax)}</span>
           <ProjectStatusBadge status={p.status} />
         </div>
         <div className="sm:hidden flex-shrink-0">
@@ -134,8 +136,7 @@ function ProjectRow({ p }: { p: Project }) {
             <div className="flex items-center gap-2 flex-wrap">
               <WorkStyleBadge style={p.workStyle} />
               {p.workHours && <span className="text-xs text-gray-600">{p.workHours}</span>}
-              {p.desiredRate && <span className="text-xs text-gray-600">{formatRate(p.desiredRate)}</span>}
-              {p.minimumRate && <span className="text-xs text-gray-500">（最低 {formatRate(p.minimumRate)}）</span>}
+              {(p.rateMin || p.desiredRate) && <span className="text-xs text-gray-600">{formatRateNew(p.rateType, p.rateMin ?? p.desiredRate, p.rateMax)}</span>}
             </div>
             <div className="flex items-center gap-2">
               <CopyButton text={buildProjectText(p)} label="案件情報コピー" />

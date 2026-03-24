@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { DashboardShell } from '@/components/layout/DashboardShell'
 import { ProjectStatusBadge, WorkStyleBadge, InterviewResultBadge } from '@/components/ui/StatusBadge'
-import { formatDate, formatDateTime, formatRate } from '@/lib/utils'
+import { formatDate, formatDateTime, formatRateNew } from '@/lib/utils'
 import Link from 'next/link'
 import { Edit, Plus } from 'lucide-react'
 import { matchProjectToCandidates } from '@/lib/matching'
@@ -101,12 +101,8 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                 <dd className="font-medium">{project.workHours ?? '-'}</dd>
               </div>
               <div>
-                <dt className="text-gray-500">希望単価</dt>
-                <dd className="font-medium text-green-700">{formatRate(project.desiredRate)}</dd>
-              </div>
-              <div>
-                <dt className="text-gray-500">最低単価</dt>
-                <dd className="font-medium">{formatRate(project.minimumRate)}</dd>
+                <dt className="text-gray-500">単価</dt>
+                <dd className="font-medium text-green-700">{formatRateNew(project.rateType, project.rateMin ?? project.desiredRate, project.rateMax)}</dd>
               </div>
             </dl>
 

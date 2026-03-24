@@ -87,8 +87,11 @@ model Project {
   requiredSkills    String?
   workStyle         String?  // フルリモート | 一部出社 | 出社
   workHours         String?  // 160時間 | 120時間 | 時短 | フルタイム
-  desiredRate       Int?
-  minimumRate       Int?
+  rateType          String?  @default("hourly") // hourly | daily | monthly
+  rateMin           Int?     // 最低額 or 単価
+  rateMax           Int?     // 上限額（任意）
+  desiredRate       Int?     // 旧フィールド（互換）
+  minimumRate       Int?     // 旧フィールド（互換）
   workConditions    String?
   recruitmentStatus String?
   isYearsRequired   Float?   // 必要IS経験年数

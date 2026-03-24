@@ -66,8 +66,11 @@ function extractProjectData(formData: FormData) {
     requiredSkills: getString('requiredSkills'),
     workStyle: getString('workStyle'),
     workHours: getString('workHours'),
-    desiredRate: getInt('desiredRate'),
-    minimumRate: getInt('minimumRate'),
+    rateType: getString('rateType') || 'hourly',
+    rateMin: getInt('rateMin'),
+    rateMax: getInt('rateMax'),
+    desiredRate: getInt('rateMin'), // 互換性のため
+    minimumRate: null,
     workConditions: getString('workConditions'),
     recruitmentStatus: getString('recruitmentStatus'),
     isYearsRequired: getFloat('isYearsRequired'),

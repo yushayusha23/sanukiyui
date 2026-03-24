@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { PROJECT_STATUS, WORK_STYLE_OPTIONS, WORK_HOURS_OPTIONS } from '@/types'
 
@@ -13,6 +13,9 @@ type Project = {
   requiredSkills?: string | null
   workStyle?: string | null
   workHours?: string | null
+  rateType?: string | null
+  rateMin?: number | null
+  rateMax?: number | null
   desiredRate?: number | null
   minimumRate?: number | null
   workConditions?: string | null
@@ -33,8 +36,15 @@ interface ProjectFormProps {
   clients?: ClientOption[]
 }
 
+const RATE_TYPE_OPTIONS = [
+  { value: 'hourly', label: '時給' },
+  { value: 'daily', label: '日給' },
+  { value: 'monthly', label: '月収' },
+]
+
 export function ProjectForm({ project, action, backHref, clients = [] }: ProjectFormProps) {
   const [pending, startTransition] = useTransition()
+  const [rateType, setRateType] = useState(project?.rateType ?? 'hourly')
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -91,6 +101,42 @@ export function ProjectForm({ project, action, backHref, clients = [] }: Project
                 <option key={key} value={key}>{label}</option>
               ))}
             </select>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="form-label">単価</label>
+            <div className="flex items-center gap-2 flex-wrap">
+              <select
+                name="rateType"
+                value={rateType}
+                onChange={e => setRateType(e.target.value)}
+                className="form-select w-28"
+              >
+                {RATE_TYPE_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+              <span className="text-gray-500 text-sm">¥</span>
+              <input
+                name="rateMin"
+                type="number"
+                min="0"
+                step="100"
+                defaultValue={project?.rateMin ?? project?.desiredRate ?? ''}
+                className="form-input w-32"
+                placeholder="2500"
+              />
+              <span className="text-gray-400 text-sm">〜 ¥</span>
+              <input
+                name="rateMax"
+                type="number"
+                min="0"
+                step="100"
+                defaultValue={project?.rateMax ?? ''}
+                className="form-input w-32"
+                placeholder="3000（任意）"
+              />
+            </div>
           </div>
 
           <div className="sm:col-span-2">
