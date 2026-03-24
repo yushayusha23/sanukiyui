@@ -10,7 +10,7 @@ export default async function NewCandidatePage() {
   })
 
   return (
-    <DashboardShell title="求職者 新規登録">
+    <DashboardShell title="人材 新規登録">
       <CandidateForm
         action={createCandidate}
         backHref="/candidates"

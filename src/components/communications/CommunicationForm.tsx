@@ -41,7 +41,7 @@ export function CommunicationForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <label className="form-label">
-            求職者 <span className="text-red-500">*</span>
+            人材 <span className="text-red-500">*</span>
           </label>
           <select
             name="candidateId"
@@ -49,7 +49,7 @@ export function CommunicationForm({
             defaultValue={defaultCandidateId ?? ''}
             className="form-select"
           >
-            <option value="">求職者を選択...</option>
+            <option value="">人材を選択...</option>
             {candidates.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}

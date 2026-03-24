@@ -71,7 +71,7 @@ function InterviewTable({ interviews, emptyText }: { interviews: Interview[]; em
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               <th className="text-left px-4 py-3 font-medium text-gray-600">面談日時</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">求職者</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">人材</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">案件</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">担当者</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">結果</th>

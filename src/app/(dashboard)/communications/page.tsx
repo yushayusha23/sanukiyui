@@ -104,7 +104,7 @@ export default async function CommunicationsPage({
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">求職者</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">人材</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">手段</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">連絡日時</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">内容</th>

@@ -229,32 +229,6 @@ export function ProjectForm({ project, action, backHref, clients = [] }: Project
             </select>
           </div>
 
-          <div>
-            <label className="form-label">希望単価（時給）</label>
-            <input
-              name="desiredRate"
-              type="number"
-              min="0"
-              step="100"
-              defaultValue={project?.desiredRate ?? ''}
-              className="form-input"
-              placeholder="2500"
-            />
-          </div>
-
-          <div>
-            <label className="form-label">最低単価（時給）</label>
-            <input
-              name="minimumRate"
-              type="number"
-              min="0"
-              step="100"
-              defaultValue={project?.minimumRate ?? ''}
-              className="form-input"
-              placeholder="2000"
-            />
-          </div>
-
           <div className="sm:col-span-2">
             <label className="form-label">稼働条件・備考</label>
             <textarea
