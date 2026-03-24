@@ -93,14 +93,6 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
 
             <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm mb-4">
               <div>
-                <dt className="text-gray-500">人材元クライアント</dt>
-                <dd className="font-medium">{project.sourceClientName ?? '-'}</dd>
-              </div>
-              <div>
-                <dt className="text-gray-500">募集状況</dt>
-                <dd className="font-medium">{project.recruitmentStatus ?? '-'}</dd>
-              </div>
-              <div>
                 <dt className="text-gray-500">勤務形態</dt>
                 <dd><WorkStyleBadge style={project.workStyle} /></dd>
               </div>

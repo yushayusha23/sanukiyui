@@ -85,32 +85,12 @@ export function ProjectForm({ project, action, backHref, clients = [] }: Project
           )}
 
           <div>
-            <label className="form-label">人材元クライアント名</label>
-            <input
-              name="sourceClientName"
-              defaultValue={project?.sourceClientName ?? ''}
-              className="form-input"
-              placeholder="人材紹介会社〇〇"
-            />
-          </div>
-
-          <div>
             <label className="form-label">ステータス</label>
             <select name="status" defaultValue={project?.status ?? 'RECRUITING'} className="form-select">
               {Object.entries(PROJECT_STATUS).map(([key, label]) => (
                 <option key={key} value={key}>{label}</option>
               ))}
             </select>
-          </div>
-
-          <div>
-            <label className="form-label">募集状況</label>
-            <input
-              name="recruitmentStatus"
-              defaultValue={project?.recruitmentStatus ?? ''}
-              className="form-input"
-              placeholder="急募、1名など"
-            />
           </div>
 
           <div className="sm:col-span-2">
