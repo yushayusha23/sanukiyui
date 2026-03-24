@@ -73,6 +73,7 @@ function extractProjectData(formData: FormData) {
     minimumRate: null,
     workConditions: getString('workConditions'),
     recruitmentStatus: getString('recruitmentStatus'),
+    startDate: getString('startDate') ? new Date(getString('startDate')!) : null,
     isYearsRequired: getFloat('isYearsRequired'),
     fsYearsRequired: getFloat('fsYearsRequired'),
     saasYearsRequired: getFloat('saasYearsRequired'),

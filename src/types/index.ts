@@ -131,6 +131,7 @@ export type ProjectWithCounts = {
   minimumRate: number | null
   workConditions: string | null
   recruitmentStatus: string | null
+  startDate: Date | null
   status: string
   createdAt: Date
   updatedAt: Date

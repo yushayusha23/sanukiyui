@@ -104,6 +104,12 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                 <dt className="text-gray-500">単価</dt>
                 <dd className="font-medium text-green-700">{formatRateNew(project.rateType, project.rateMin ?? project.desiredRate, project.rateMax)}</dd>
               </div>
+              {project.startDate && (
+                <div>
+                  <dt className="text-gray-500">稼働開始日</dt>
+                  <dd className="font-medium">{formatDate(project.startDate)}</dd>
+                </div>
+              )}
             </dl>
 
             {project.description && (

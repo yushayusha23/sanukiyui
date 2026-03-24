@@ -97,6 +97,7 @@ model Project {
   isYearsRequired   Float?   // 必要IS経験年数
   fsYearsRequired   Float?   // 必要FS経験年数
   saasYearsRequired Float?   // 必要SaaS経験年数
+  startDate         DateTime? // 稼働開始日
   status            String   @default("RECRUITING")
   clientId          String?  // クライアント紐づけ
   createdAt         DateTime @default(now())

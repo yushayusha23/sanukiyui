@@ -23,6 +23,7 @@ type Project = {
   isYearsRequired?: number | null
   fsYearsRequired?: number | null
   saasYearsRequired?: number | null
+  startDate?: Date | string | null
   status: string
   clientId?: string | null
 }
@@ -209,6 +210,16 @@ export function ProjectForm({ project, action, backHref, clients = [] }: Project
       <div className="card p-6">
         <h3 className="section-title">勤務条件</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">稼働開始日</label>
+            <input
+              name="startDate"
+              type="date"
+              defaultValue={project?.startDate ? new Date(project.startDate).toISOString().split('T')[0] : ''}
+              className="form-input"
+            />
+          </div>
+
           <div>
             <label className="form-label">勤務形態</label>
             <select name="workStyle" defaultValue={project?.workStyle ?? ''} className="form-select">
