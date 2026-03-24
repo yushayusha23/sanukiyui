@@ -114,7 +114,7 @@ function ProjectRow({ p }: { p: Project }) {
               </span>
             )}
           </div>
-          <p className="text-xs text-gray-400">{formatDate(p.updatedAt)}</p>
+          <p className="text-xs text-gray-500">{p.clientName ?? '-'}</p>
         </div>
         <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
           <WorkStyleBadge style={p.workStyle} />
