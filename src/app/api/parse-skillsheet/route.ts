@@ -8,8 +8,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import Anthropic from '@anthropic-ai/sdk'
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse')
+
+export const maxDuration = 30
+
+async function parsePdf(buffer: Buffer): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pdfParseModule = await import('pdf-parse') as any
+  const pdfParse = pdfParseModule.default ?? pdfParseModule
+  const result = await pdfParse(buffer)
+  return result.text
+}
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -31,9 +39,9 @@ export async function POST(req: NextRequest) {
   const buffer = Buffer.from(await file.arrayBuffer())
   let pdfText = ''
   try {
-    const parsed = await pdfParse(buffer)
-    pdfText = parsed.text
-  } catch {
+    pdfText = await parsePdf(buffer)
+  } catch (e) {
+    console.error('[PDF Parse Error]', e)
     return NextResponse.json({ error: 'PDF読み取りに失敗しました' }, { status: 400 })
   }
 
