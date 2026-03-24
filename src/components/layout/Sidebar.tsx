@@ -115,6 +115,20 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           })}
         </nav>
 
+        {/* LINE公式アカウント */}
+        <div className="px-3 py-2 border-t border-green-900">
+          <a
+            href="https://manager.line.biz"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-green-300 hover:bg-green-900 hover:text-white transition-colors w-full"
+          >
+            <span className="text-base leading-none">💬</span>
+            <span>LINE公式アカウント</span>
+            <span className="ml-auto text-xs text-green-600">↗</span>
+          </a>
+        </div>
+
         {/* 恐竜デコ */}
         <div className="px-4 py-2 text-center">
           <p className="text-xs text-green-700 tracking-widest">🦕 🦖 🦕 🦖 🦕</p>
