@@ -18,6 +18,7 @@ import {
   X,
   ChevronDown,
   StickyNote,
+  BookOpen,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
@@ -32,6 +33,7 @@ const navItems = [
   { href: '/templates', label: 'テンプレート', icon: FileText },
   { href: '/clients', label: 'クライアント', icon: Building2 },
   { href: '/handover', label: '引き継ぎ', icon: ClipboardList },
+  { href: '/manuals', label: 'マニュアル', icon: BookOpen },
 ]
 
 interface SidebarProps {

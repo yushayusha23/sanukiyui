@@ -197,6 +197,17 @@ model HandoverNote {
   updatedAt DateTime @updatedAt
 }
 
+// マニュアル
+model Manual {
+  id        String   @id @default(cuid())
+  title     String
+  folder    String   @default("一般") // フォルダ名（自由入力）
+  content   String?  // 本文
+  memo      String?  // 補足メモ
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // 付箋メモ
 // color: yellow | green | pink | blue
 model StickyNote {
