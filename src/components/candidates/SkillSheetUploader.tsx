@@ -30,9 +30,11 @@ export function SkillSheetUploader({ onExtracted }: SkillSheetUploaderProps) {
 
   async function handleFile(file: File) {
     if (!file) return
-    const isPdf = file.type === 'application/pdf' || file.type === 'application/x-pdf' || file.name.toLowerCase().endsWith('.pdf')
-    if (!isPdf) {
-      setErrorMsg('PDFファイルのみ対応しています')
+    const name = file.name.toLowerCase()
+    const supported = name.endsWith('.pdf') || name.endsWith('.xlsx') || name.endsWith('.xls') ||
+      name.endsWith('.docx') || name.endsWith('.doc') || name.endsWith('.csv') || name.endsWith('.txt')
+    if (!supported) {
+      setErrorMsg('対応形式: PDF / Excel / Word / CSV')
       setStatus('error')
       return
     }
@@ -87,7 +89,7 @@ export function SkillSheetUploader({ onExtracted }: SkillSheetUploaderProps) {
         <input
           ref={inputRef}
           type="file"
-          accept="application/pdf"
+          accept=".pdf,.xlsx,.xls,.docx,.doc,.csv,.txt"
           className="hidden"
           onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
         />
@@ -96,7 +98,7 @@ export function SkillSheetUploader({ onExtracted }: SkillSheetUploaderProps) {
           <>
             <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
             <p className="text-sm font-medium text-gray-700">スキルシートをドラッグ&ドロップ</p>
-            <p className="text-xs text-gray-400 mt-1">またはクリックしてファイルを選択（PDF）</p>
+            <p className="text-xs text-gray-400 mt-1">PDF / Excel / Word / CSV に対応</p>
           </>
         )}
 
@@ -130,7 +132,7 @@ export function SkillSheetUploader({ onExtracted }: SkillSheetUploaderProps) {
         <div className="flex items-center gap-1.5 mt-2">
           <FileText className="w-3.5 h-3.5 text-gray-400" />
           <p className="text-xs text-gray-400">
-            名前・年齢・IS/FS/SaaS経験年数・希望単価などを自動入力します
+            PDF・Excel・Word・CSV対応。名前・年齢・IS/FS/SaaS経験年数・希望単価などを自動入力します
           </p>
         </div>
       )}

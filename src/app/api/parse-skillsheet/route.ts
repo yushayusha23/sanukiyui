@@ -1,5 +1,5 @@
 /**
- * スキルシートPDF解析API
+ * スキルシート解析API（PDF / Excel / Word 対応）
  * POST /api/parse-skillsheet
  * FormData: { file: File }
  * → Claude APIでテキスト解析 → 人材情報JSONを返す
@@ -11,12 +11,66 @@ import Anthropic from '@anthropic-ai/sdk'
 
 export const maxDuration = 30
 
+/** PDF → テキスト */
 async function parsePdf(buffer: Buffer): Promise<string> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pdfParseModule = await import('pdf-parse') as any
   const pdfParse = pdfParseModule.default ?? pdfParseModule
   const result = await pdfParse(buffer)
   return result.text
+}
+
+/** Excel (.xlsx / .xls) → テキスト */
+async function parseExcel(buffer: Buffer): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const XLSX = await import('xlsx') as any
+  const workbook = XLSX.read(buffer, { type: 'buffer' })
+  const lines: string[] = []
+  for (const sheetName of workbook.SheetNames) {
+    const sheet = workbook.Sheets[sheetName]
+    const csv = XLSX.utils.sheet_to_csv(sheet)
+    lines.push(`[シート: ${sheetName}]\n${csv}`)
+  }
+  return lines.join('\n\n')
+}
+
+/** Word (.docx) → テキスト */
+async function parseWord(buffer: Buffer): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mammoth = await import('mammoth') as any
+  const result = await mammoth.extractRawText({ buffer })
+  return result.value
+}
+
+/** ファイル種別を判定してテキスト抽出 */
+async function extractText(buffer: Buffer, filename: string, mimeType: string): Promise<string> {
+  const name = filename.toLowerCase()
+
+  // PDF
+  if (mimeType === 'application/pdf' || mimeType === 'application/x-pdf' || name.endsWith('.pdf')) {
+    return await parsePdf(buffer)
+  }
+  // Excel / Google Sheets エクスポート
+  if (name.endsWith('.xlsx') || name.endsWith('.xls') ||
+      mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      mimeType === 'application/vnd.ms-excel') {
+    return await parseExcel(buffer)
+  }
+  // CSV（Google Sheetsのエクスポート含む）
+  if (name.endsWith('.csv') || mimeType === 'text/csv') {
+    return buffer.toString('utf-8')
+  }
+  // Word / Google Docs エクスポート
+  if (name.endsWith('.docx') || name.endsWith('.doc') ||
+      mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      mimeType === 'application/msword') {
+    return await parseWord(buffer)
+  }
+  // テキストファイル
+  if (name.endsWith('.txt') || mimeType === 'text/plain') {
+    return buffer.toString('utf-8')
+  }
+  throw new Error('対応していないファイル形式です（PDF / Excel / Word / CSV に対応）')
 }
 
 export async function POST(req: NextRequest) {
@@ -35,18 +89,19 @@ export async function POST(req: NextRequest) {
   const file = formData.get('file') as File | null
   if (!file) return NextResponse.json({ error: 'ファイルがありません' }, { status: 400 })
 
-  // PDFからテキスト抽出
+  // テキスト抽出
   const buffer = Buffer.from(await file.arrayBuffer())
-  let pdfText = ''
+  let fileText = ''
   try {
-    pdfText = await parsePdf(buffer)
+    fileText = await extractText(buffer, file.name, file.type)
   } catch (e) {
-    console.error('[PDF Parse Error]', e)
-    return NextResponse.json({ error: 'PDF読み取りに失敗しました' }, { status: 400 })
+    const msg = e instanceof Error ? e.message : 'ファイル読み取りに失敗しました'
+    console.error('[Parse Error]', e)
+    return NextResponse.json({ error: msg }, { status: 400 })
   }
 
-  if (!pdfText.trim()) {
-    return NextResponse.json({ error: 'PDFからテキストを取得できませんでした（画像PDFは非対応）' }, { status: 400 })
+  if (!fileText.trim()) {
+    return NextResponse.json({ error: 'ファイルからテキストを取得できませんでした（画像のみのファイルは非対応）' }, { status: 400 })
   }
 
   // Claude APIで情報抽出
@@ -70,7 +125,7 @@ export async function POST(req: NextRequest) {
 - preferredWorkStyle: 希望勤務形態（「フルリモート」「一部出社」「出社」のいずれか、不明ならnull）
 
 スキルシート内容：
-${pdfText.slice(0, 8000)}`
+${fileText.slice(0, 8000)}`
 
   const message = await client.messages.create({
     model: 'claude-3-5-haiku-20241022',
