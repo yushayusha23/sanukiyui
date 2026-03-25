@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '../prisma'
+import { parseNotes, type NoteEntry } from '../notes'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth'
 import { writeFile, mkdir } from 'fs/promises'
@@ -169,17 +170,6 @@ export async function deleteNote(id: string, index: number) {
   revalidatePath(`/candidates/${id}`)
 }
 
-export type NoteEntry = { text: string; at: string; by: string }
-
-export function parseNotes(raw: string | null): NoteEntry[] {
-  if (!raw) return []
-  try {
-    const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed)) return parsed
-  } catch {}
-  // レガシー文字列はそのまま1エントリとして扱う
-  return [{ text: raw, at: '', by: '' }]
-}
 
 export async function deleteCandidate(id: string) {
   await requireAuth()

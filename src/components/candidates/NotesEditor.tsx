@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { addNote, deleteNote, type NoteEntry } from '@/lib/actions/candidates'
+import { addNote, deleteNote } from '@/lib/actions/candidates'
+import type { NoteEntry } from '@/lib/notes'
 import { Trash2, Plus } from 'lucide-react'
 
 const AUTHORS = ['峠', '佐貫']
