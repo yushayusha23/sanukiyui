@@ -62,6 +62,23 @@ export function InterviewResultBadge({ result }: { result: string | null }) {
   )
 }
 
+export const ACTION_STATUS_MAP: Record<string, { label: string; color: string }> = {
+  PROPOSAL_NEEDED:   { label: '提案必要！', color: 'bg-red-100 text-red-700 border border-red-300' },
+  WAITING_CANDIDATE: { label: '人材元返信待ち', color: 'bg-amber-100 text-amber-700 border border-amber-300' },
+  WAITING_CLIENT:    { label: '案件先返信待ち', color: 'bg-blue-100 text-blue-700 border border-blue-300' },
+}
+
+export function ActionStatusBadge({ status }: { status: string | null | undefined }) {
+  if (!status) return null
+  const s = ACTION_STATUS_MAP[status]
+  if (!s) return null
+  return (
+    <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap', s.color)}>
+      {s.label}
+    </span>
+  )
+}
+
 export function WorkStyleBadge({ style }: { style: string | null }) {
   if (!style) return null
   const colors: Record<string, string> = {

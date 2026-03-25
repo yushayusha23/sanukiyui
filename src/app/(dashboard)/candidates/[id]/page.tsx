@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { DashboardShell } from '@/components/layout/DashboardShell'
-import { CandidateStatusBadge, WorkStyleBadge, ContactTypeBadge } from '@/components/ui/StatusBadge'
+import { CandidateStatusBadge, WorkStyleBadge, ContactTypeBadge, ActionStatusBadge } from '@/components/ui/StatusBadge'
 import { formatDate, formatDateTime, formatRate, isOverdue } from '@/lib/utils'
 import Link from 'next/link'
 import { Edit, Plus, AlertCircle, MessageCircle, FileText } from 'lucide-react'
@@ -151,7 +151,10 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
                   {candidate.age ? `${candidate.age}歳` : ''} {candidate.address ?? ''}
                 </p>
               </div>
-              <CandidateStatusBadge status={candidate.status} />
+              <div className="flex flex-col items-end gap-1.5">
+                <CandidateStatusBadge status={candidate.status} />
+                <ActionStatusBadge status={candidate.actionStatus} />
+              </div>
             </div>
 
             <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">

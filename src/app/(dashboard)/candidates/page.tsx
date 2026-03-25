@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { DashboardShell } from '@/components/layout/DashboardShell'
-import { CandidateStatusBadge, WorkStyleBadge } from '@/components/ui/StatusBadge'
+import { CandidateStatusBadge, WorkStyleBadge, ActionStatusBadge } from '@/components/ui/StatusBadge'
 import { formatDate, formatDateTime, formatRate } from '@/lib/utils'
 import Link from 'next/link'
 import { Plus, Search, Trophy, PauseCircle, XCircle } from 'lucide-react'
@@ -78,6 +78,7 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
                 <th className="text-left px-4 py-3 font-medium text-gray-600">稼働時間</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">希望単価</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">ステータス</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">アクション</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">面談確定日</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">稼働開始日</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">最終更新</th>
@@ -86,7 +87,7 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
             <tbody className="divide-y divide-gray-100">
               {candidates.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-6 text-center text-gray-400">
+                  <td colSpan={12} className="px-4 py-6 text-center text-gray-400">
                     該当する人材がいません
                   </td>
                 </tr>
@@ -116,6 +117,7 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
                     </td>
                     <td className="px-4 py-3 text-gray-600">{formatRate(c.desiredHourlyRate)}</td>
                     <td className="px-4 py-3"><CandidateStatusBadge status={c.status} /></td>
+                    <td className="px-4 py-3"><ActionStatusBadge status={c.actionStatus} /></td>
                     <td className="px-4 py-3 text-gray-600">{formatDate(c.confirmedInterviewDate)}</td>
                     <td className="px-4 py-3 text-gray-600">{formatDate(c.availableStartDate)}</td>
                     <td className="px-4 py-3 text-gray-400 text-xs">{formatDate(c.updatedAt)}</td>
@@ -146,7 +148,10 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
                   </div>
                   <p className="text-sm text-gray-500">{c.client?.name ?? ''}{c.age ? `　${c.age}歳` : ''}</p>
                 </div>
-                <CandidateStatusBadge status={c.status} />
+                <div className="flex flex-col items-end gap-1">
+                  <CandidateStatusBadge status={c.status} />
+                  <ActionStatusBadge status={c.actionStatus} />
+                </div>
               </div>
               <div className="flex items-center gap-2 flex-wrap text-sm text-gray-600">
                 <WorkStyleBadge style={c.preferredWorkStyle} />

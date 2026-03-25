@@ -34,6 +34,7 @@ type Candidate = {
   availableStartDate?: Date | null
   confirmedInterviewDate?: Date | null
   status: string
+  actionStatus?: string | null
   notes?: string | null
   lineUserId?: string | null
   clientId?: string | null
@@ -198,6 +199,16 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
               {Object.entries(CANDIDATE_STATUS).map(([key, label]) => (
                 <option key={key} value={key}>{label}</option>
               ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="form-label">アクション</label>
+            <select name="actionStatus" defaultValue={candidate?.actionStatus ?? ''} className="form-select">
+              <option value="">なし</option>
+              <option value="PROPOSAL_NEEDED">🔴 提案必要！</option>
+              <option value="WAITING_CANDIDATE">🟡 人材元返信待ち</option>
+              <option value="WAITING_CLIENT">🔵 案件先返信待ち</option>
             </select>
           </div>
 

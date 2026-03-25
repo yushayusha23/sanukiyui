@@ -36,6 +36,7 @@ model Candidate {
   availableStartDate     DateTime?
   confirmedInterviewDate DateTime?
   status                 String    @default("APPLIED")
+  actionStatus           String?   // PROPOSAL_NEEDED | WAITING_CANDIDATE | WAITING_CLIENT
   notes                  String?
   lineUserId             String?   // LINE ユーザーID (Uxxxxx...)
   clientId               String?   // クライアント紐づけ
