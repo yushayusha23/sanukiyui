@@ -224,6 +224,7 @@ model StickyNote {
   content   String
   color     String   @default("yellow")
   author    String   @default("")
+  done      Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

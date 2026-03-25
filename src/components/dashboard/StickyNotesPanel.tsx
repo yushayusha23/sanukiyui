@@ -8,6 +8,7 @@ type Note = {
   content: string
   color: string
   author: string
+  done: boolean
   createdAt: string
 }
 
@@ -88,6 +89,15 @@ export function StickyNotesPanel() {
     setEditing(null)
   }
 
+  async function toggleDone(id: string, current: boolean) {
+    setNotes(prev => prev.map(n => n.id === id ? { ...n, done: !current } : n))
+    await fetch(`/api/sticky-notes/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ done: !current }),
+    })
+  }
+
   async function deleteNote(id: string) {
     await fetch(`/api/sticky-notes/${id}`, { method: 'DELETE' })
     setNotes(prev => prev.filter(n => n.id !== id))
@@ -165,7 +175,7 @@ export function StickyNotesPanel() {
 
                 return (
                   <div key={note.id}
-                    className={`relative flex flex-col ${cs.bg} ${cs.border} border rounded-lg p-3 shadow-sm transition-shadow ${isEditing ? 'ring-2 ring-gray-400' : ''}`}
+                    className={`relative flex flex-col ${cs.bg} ${cs.border} border rounded-lg p-3 shadow-sm transition-all ${isEditing ? 'ring-2 ring-gray-400' : ''} ${note.done ? 'opacity-60' : ''}`}
                     style={{ minHeight: '80px' }}
                   >
                     {isEditing ? (
@@ -213,19 +223,43 @@ export function StickyNotesPanel() {
                     ) : (
                       /* 表示モード */
                       <>
+                        {/* 済みスタンプ */}
+                        {note.done && (
+                          <div
+                            onClick={() => toggleDone(note.id, note.done)}
+                            className="absolute inset-0 flex items-center justify-center rounded-lg cursor-pointer z-10"
+                          >
+                            <span className="text-green-600 font-black select-none pointer-events-none"
+                              style={{ fontSize: '56px', lineHeight: 1, opacity: 0.55, transform: 'rotate(-15deg)', textShadow: '0 0 2px rgba(0,0,0,0.1)' }}>
+                              ✓
+                            </span>
+                          </div>
+                        )}
                         <button
                           onClick={() => deleteNote(note.id)}
-                          className="absolute top-1.5 right-1.5 p-0.5 rounded hover:bg-black/10 text-gray-500 hover:text-gray-700"
+                          className="absolute top-1.5 right-1.5 p-0.5 rounded hover:bg-black/10 text-gray-500 hover:text-gray-700 z-20"
                         >
                           <X className="w-3 h-3" />
                         </button>
+                        {/* 済みチェックボタン */}
+                        <button
+                          onClick={() => toggleDone(note.id, note.done)}
+                          className={`absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors z-20 ${
+                            note.done
+                              ? 'bg-green-500 border-green-500 text-white'
+                              : 'border-gray-300 bg-white/60 text-transparent hover:border-green-400'
+                          }`}
+                          title={note.done ? '未完了に戻す' : '済みにする'}
+                        >
+                          <Check className="w-3 h-3" />
+                        </button>
                         <p
-                          onClick={() => setEditing({ id: note.id, content: note.content, color: note.color, author: note.author })}
-                          className={`text-xs ${cs.text} whitespace-pre-wrap pr-4 leading-relaxed flex-1 cursor-pointer`}
+                          onClick={() => !note.done && setEditing({ id: note.id, content: note.content, color: note.color, author: note.author })}
+                          className={`text-xs ${cs.text} whitespace-pre-wrap pr-4 leading-relaxed flex-1 ${note.done ? 'cursor-default' : 'cursor-pointer'}`}
                         >
                           {note.content}
                         </p>
-                        <p className="text-[10px] text-gray-400 mt-2">
+                        <p className="text-[10px] text-gray-400 mt-2 pr-6">
                           {note.author && <span className="font-medium mr-1">{note.author}</span>}
                           {note.createdAt && formatDate(note.createdAt)}
                         </p>

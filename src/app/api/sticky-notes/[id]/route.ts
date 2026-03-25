@@ -18,13 +18,14 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { content, color, author } = await req.json()
+    const { content, color, author, done } = await req.json()
     const note = await prisma.stickyNote.update({
       where: { id: params.id },
       data: {
         ...(content !== undefined && { content }),
         ...(color !== undefined && { color }),
         ...(author !== undefined && { author }),
+        ...(done !== undefined && { done }),
       },
     })
     return NextResponse.json(note)
