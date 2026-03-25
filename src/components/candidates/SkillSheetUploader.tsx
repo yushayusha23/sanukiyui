@@ -29,7 +29,9 @@ export function SkillSheetUploader({ onExtracted }: SkillSheetUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   async function handleFile(file: File) {
-    if (!file || file.type !== 'application/pdf') {
+    if (!file) return
+    const isPdf = file.type === 'application/pdf' || file.type === 'application/x-pdf' || file.name.toLowerCase().endsWith('.pdf')
+    if (!isPdf) {
       setErrorMsg('PDFファイルのみ対応しています')
       setStatus('error')
       return
