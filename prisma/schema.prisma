@@ -29,6 +29,7 @@ model Candidate {
   company                String?   // 所属会社
   address                String?
   preferredWorkStyle     String?   // フルリモート | 一部出社 | 出社
+  preferredWorkHours     String?   // フルタイム | 時短 | 160時間 | etc.
   desiredHourlyRate      Int?
   minimumHourlyRate      Int?
   workHistory            String?
@@ -55,8 +56,11 @@ model CandidateSkillDetail {
   candidateId        String    @unique
   candidate          Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   isYears            Float?    // インサイドセールス経験年数
-  ifYears            Float?    // インフォメーション経験年数
+  ifYears            Float?    // フィールドセールス経験年数
   saasYears          Float?    // SaaS経験年数
+  hasToBExperience   Boolean   @default(false) // BtoB経験あり
+  hasToCExperience   Boolean   @default(false) // BtoC経験あり
+  customTags         String?   // カスタムタグ（カンマ区切り、自由入力）
   otherBpoExperience String?   // その他BPO関連経験
   tools              String?   // 使用ツール（カンマ区切り）
   strengths          String?   // 得意領域

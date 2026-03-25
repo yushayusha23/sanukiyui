@@ -26,6 +26,7 @@ export async function createCandidate(formData: FormData) {
       company: data.company,
       address: data.address,
       preferredWorkStyle: data.preferredWorkStyle,
+      preferredWorkHours: data.preferredWorkHours,
       desiredHourlyRate: data.desiredHourlyRate,
       minimumHourlyRate: data.minimumHourlyRate,
       workHistory: data.workHistory,
@@ -44,6 +45,9 @@ export async function createCandidate(formData: FormData) {
       isYears: data.isYears,
       ifYears: data.ifYears,
       saasYears: data.saasYears,
+      hasToBExperience: data.hasToBExperience,
+      hasToCExperience: data.hasToCExperience,
+      customTags: data.customTags,
       otherBpoExperience: data.otherBpoExperience,
       tools: data.tools,
       strengths: data.strengths,
@@ -90,6 +94,7 @@ export async function updateCandidate(id: string, formData: FormData) {
       company: data.company,
       address: data.address,
       preferredWorkStyle: data.preferredWorkStyle,
+      preferredWorkHours: data.preferredWorkHours,
       desiredHourlyRate: data.desiredHourlyRate,
       minimumHourlyRate: data.minimumHourlyRate,
       workHistory: data.workHistory,
@@ -108,6 +113,9 @@ export async function updateCandidate(id: string, formData: FormData) {
       isYears: data.isYears,
       ifYears: data.ifYears,
       saasYears: data.saasYears,
+      hasToBExperience: data.hasToBExperience,
+      hasToCExperience: data.hasToCExperience,
+      customTags: data.customTags,
       otherBpoExperience: data.otherBpoExperience,
       tools: data.tools,
       strengths: data.strengths,
@@ -118,6 +126,9 @@ export async function updateCandidate(id: string, formData: FormData) {
       isYears: data.isYears,
       ifYears: data.ifYears,
       saasYears: data.saasYears,
+      hasToBExperience: data.hasToBExperience,
+      hasToCExperience: data.hasToCExperience,
+      customTags: data.customTags,
       otherBpoExperience: data.otherBpoExperience,
       tools: data.tools,
       strengths: data.strengths,
@@ -160,6 +171,9 @@ function extractCandidateData(formData: FormData) {
     const d = new Date(String(val))
     return isNaN(d.getTime()) ? null : d
   }
+  const getBool = (key: string) => {
+    return formData.get(key) === 'on' || formData.get(key) === 'true'
+  }
 
   return {
     name: getString('name') || '',
@@ -167,6 +181,7 @@ function extractCandidateData(formData: FormData) {
     company: getString('company'),
     address: getString('address'),
     preferredWorkStyle: getString('preferredWorkStyle'),
+    preferredWorkHours: getString('preferredWorkHours'),
     desiredHourlyRate: getInt('desiredHourlyRate'),
     minimumHourlyRate: getInt('minimumHourlyRate'),
     workHistory: getString('workHistory'),
@@ -179,6 +194,9 @@ function extractCandidateData(formData: FormData) {
     isYears: getFloat('isYears'),
     ifYears: getFloat('ifYears'),
     saasYears: getFloat('saasYears'),
+    hasToBExperience: getBool('hasToBExperience'),
+    hasToCExperience: getBool('hasToCExperience'),
+    customTags: getString('customTags'),
     otherBpoExperience: getString('otherBpoExperience'),
     tools: getString('tools'),
     strengths: getString('strengths'),

@@ -45,8 +45,11 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
   const allProjects = await prisma.project.findMany({
     orderBy: { createdAt: 'desc' },
     select: { id: true, title: true, clientName: true, status: true,
-      requiredSkills: true, workStyle: true, workHours: true, desiredRate: true, minimumRate: true,
-      isYearsRequired: true, fsYearsRequired: true, saasYearsRequired: true },
+      requiredSkills: true, description: true, workConditions: true,
+      workStyle: true, workHours: true,
+      rateType: true, rateMin: true, rateMax: true, desiredRate: true, minimumRate: true,
+      isYearsRequired: true, fsYearsRequired: true, saasYearsRequired: true,
+      startDate: true },
   })
   const activeProjects = allProjects.filter((p) =>
     ['RECRUITING', 'PROPOSING'].includes(p.status)
@@ -58,8 +61,11 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
       id: candidate.id,
       name: candidate.name,
       preferredWorkStyle: candidate.preferredWorkStyle,
+      preferredWorkHours: candidate.preferredWorkHours,
       desiredHourlyRate: candidate.desiredHourlyRate,
       minimumHourlyRate: candidate.minimumHourlyRate,
+      availableStartDate: candidate.availableStartDate,
+      workHistory: candidate.workHistory,
       skillDetails: candidate.skillDetails,
     },
     activeProjects

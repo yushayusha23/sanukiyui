@@ -3,13 +3,16 @@
 import { useTransition, useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { CANDIDATE_STATUS, WORK_STYLE_OPTIONS } from '@/types'
+import { CANDIDATE_STATUS, WORK_STYLE_OPTIONS, WORK_HOURS_OPTIONS } from '@/types'
 import { SkillSheetUploader } from './SkillSheetUploader'
 
 type SkillDetails = {
   isYears?: number | null
   ifYears?: number | null
   saasYears?: number | null
+  hasToBExperience?: boolean
+  hasToCExperience?: boolean
+  customTags?: string | null
   otherBpoExperience?: string | null
   tools?: string | null
   strengths?: string | null
@@ -23,6 +26,7 @@ type Candidate = {
   company?: string | null
   address?: string | null
   preferredWorkStyle?: string | null
+  preferredWorkHours?: string | null
   desiredHourlyRate?: number | null
   minimumHourlyRate?: number | null
   workHistory?: string | null
@@ -207,6 +211,16 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
           </div>
 
           <div>
+            <label className="form-label">希望稼働時間</label>
+            <select name="preferredWorkHours" defaultValue={candidate?.preferredWorkHours ?? ''} className="form-select">
+              <option value="">選択してください</option>
+              {WORK_HOURS_OPTIONS.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label className="form-label">希望単価（時給）</label>
             <input
               name="desiredHourlyRate"
@@ -333,6 +347,41 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
               className="form-input"
               placeholder="1.0"
             />
+          </div>
+        </div>
+
+        {/* 経験タイプ */}
+        <div className="mb-4">
+          <label className="form-label mb-2">経験タイプ</label>
+          <div className="flex flex-wrap gap-3">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                name="hasToBExperience"
+                defaultChecked={sd?.hasToBExperience ?? false}
+                className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+              />
+              <span className="text-sm text-gray-700 font-medium">BtoB経験あり</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                name="hasToCExperience"
+                defaultChecked={sd?.hasToCExperience ?? false}
+                className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+              />
+              <span className="text-sm text-gray-700 font-medium">BtoC経験あり</span>
+            </label>
+          </div>
+          <div className="mt-3">
+            <label className="form-label">カスタムタグ（自由入力）</label>
+            <input
+              name="customTags"
+              defaultValue={sd?.customTags ?? ''}
+              className="form-input"
+              placeholder="例: テレアポ, チャットサポート, CRM構築"
+            />
+            <p className="text-xs text-gray-400 mt-1">カンマ区切りで複数入力できます。マッチング時のキーワードとして使用されます。</p>
           </div>
         </div>
 

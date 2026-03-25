@@ -75,6 +75,7 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
                 <th className="text-left px-4 py-3 font-medium text-gray-600">年齢</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">居住地</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">希望勤務形態</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">稼働時間</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">希望単価</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">ステータス</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">面談確定日</th>
@@ -85,7 +86,7 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
             <tbody className="divide-y divide-gray-100">
               {candidates.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-6 text-center text-gray-400">
+                  <td colSpan={11} className="px-4 py-6 text-center text-gray-400">
                     該当する人材がいません
                   </td>
                 </tr>
@@ -108,6 +109,11 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
                     <td className="px-4 py-3 text-gray-600">{c.age ? `${c.age}歳` : '-'}</td>
                     <td className="px-4 py-3 text-gray-600">{c.address ?? '-'}</td>
                     <td className="px-4 py-3"><WorkStyleBadge style={c.preferredWorkStyle} /></td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {c.preferredWorkHours
+                        ? <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{c.preferredWorkHours}</span>
+                        : <span className="text-gray-300">-</span>}
+                    </td>
                     <td className="px-4 py-3 text-gray-600">{formatRate(c.desiredHourlyRate)}</td>
                     <td className="px-4 py-3"><CandidateStatusBadge status={c.status} /></td>
                     <td className="px-4 py-3 text-gray-600">{formatDate(c.confirmedInterviewDate)}</td>
@@ -142,8 +148,11 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
                 </div>
                 <CandidateStatusBadge status={c.status} />
               </div>
-              <div className="flex items-center gap-3 text-sm text-gray-600">
+              <div className="flex items-center gap-2 flex-wrap text-sm text-gray-600">
                 <WorkStyleBadge style={c.preferredWorkStyle} />
+                {c.preferredWorkHours && (
+                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{c.preferredWorkHours}</span>
+                )}
                 <span>{formatRate(c.desiredHourlyRate)}</span>
               </div>
               {c.confirmedInterviewDate && (
