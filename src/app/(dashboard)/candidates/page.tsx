@@ -53,6 +53,7 @@ async function getCandidates(params: SearchParams) {
     include: {
       skillDetails: true,
       client: { select: { name: true, codeName: true } },
+      documents: { select: { id: true, fileName: true, filePath: true }, take: 1 },
     },
     orderBy,
   })
@@ -95,6 +96,13 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
                       <Link href={`/candidates/${c.id}`} className="font-medium text-blue-700 hover:underline">
                         {c.name}
                       </Link>
+                      {c.documents[0] && (
+                        <a href={c.documents[0].filePath} target="_blank" rel="noopener noreferrer"
+                          className="ml-1.5 text-xs text-green-600 hover:underline inline-flex items-center gap-0.5"
+                          title={c.documents[0].fileName}>
+                          📎
+                        </a>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-gray-600">{c.client?.name ?? '-'}</td>
                     <td className="px-4 py-3 text-gray-600">{c.age ? `${c.age}歳` : '-'}</td>
@@ -122,7 +130,14 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
             <Link key={c.id} href={`/candidates/${c.id}`} className="card p-4 block hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <p className="font-semibold text-gray-900">{c.name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-semibold text-gray-900">{c.name}</p>
+                    {c.documents[0] && (
+                      <a href={c.documents[0].filePath} target="_blank" rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-green-600 text-sm" title={c.documents[0].fileName}>📎</a>
+                    )}
+                  </div>
                   <p className="text-sm text-gray-500">{c.client?.name ?? ''}{c.age ? `　${c.age}歳` : ''}</p>
                 </div>
                 <CandidateStatusBadge status={c.status} />

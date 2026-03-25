@@ -95,29 +95,30 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-6 max-w-3xl" suppressHydrationWarning>
-      {/* スキルシート自動入力 */}
-      {!candidate && (
-        <div className="card p-6">
-          <h3 className="section-title">🦕 スキルシートから自動入力</h3>
-          <SkillSheetUploader onExtracted={handleExtracted} onFileSelected={(f) => setPendingFile(f)} />
-        </div>
-      )}
-
       {/* 基本情報 */}
       <div className="card p-6">
         <h3 className="section-title">基本情報</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="sm:col-span-2">
-            <label className="form-label">
-              氏名 <span className="text-red-500">*</span>
-            </label>
-            <input
-              name="name"
-              required
-              defaultValue={candidate?.name}
-              className="form-input"
-              placeholder="山田 太郎"
-            />
+          {/* 氏名 + スキルシート横並び */}
+          <div className={!candidate ? 'sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 items-start' : 'sm:col-span-2'}>
+            <div>
+              <label className="form-label">
+                氏名 <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="name"
+                required
+                defaultValue={candidate?.name}
+                className="form-input"
+                placeholder="山田 太郎"
+              />
+            </div>
+            {!candidate && (
+              <div>
+                <label className="form-label">スキルシート</label>
+                <SkillSheetUploader onExtracted={handleExtracted} onFileSelected={(f) => setPendingFile(f)} />
+              </div>
+            )}
           </div>
 
           <div>
