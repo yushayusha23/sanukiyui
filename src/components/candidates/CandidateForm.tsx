@@ -99,24 +99,25 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
       <div className="card p-6">
         <h3 className="section-title">基本情報</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className={!candidate ? 'sm:col-span-2 grid grid-cols-2 gap-3 items-end' : 'sm:col-span-2'}>
-            <div>
-              <label className="form-label">氏名 <span className="text-red-500">*</span></label>
-              <input
-                name="name"
-                required
-                defaultValue={candidate?.name}
-                className="form-input"
-                placeholder="山田 太郎"
-              />
-            </div>
-            {!candidate && (
-              <div>
-                <label className="form-label">🦕 スキルシート</label>
-                <SkillSheetUploader onExtracted={handleExtracted} onFileSelected={(f) => setPendingFile(f)} />
-              </div>
-            )}
+          {/* 氏名 */}
+          <div className={!candidate ? 'sm:col-span-2' : 'sm:col-span-2'}>
+            <label className="form-label">氏名 <span className="text-red-500">*</span></label>
+            <input
+              name="name"
+              required
+              defaultValue={candidate?.name}
+              className="form-input"
+              placeholder="山田 太郎"
+            />
           </div>
+
+          {/* スキルシート（新規登録時のみ、氏名の下に配置） */}
+          {!candidate && (
+            <div className="sm:col-span-2">
+              <label className="form-label">🦕 スキルシート</label>
+              <SkillSheetUploader onExtracted={handleExtracted} onFileSelected={(f) => setPendingFile(f)} />
+            </div>
+          )}
 
           <div>
             <label className="form-label">年齢</label>
