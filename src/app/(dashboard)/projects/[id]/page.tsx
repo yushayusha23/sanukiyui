@@ -9,6 +9,7 @@ import { matchProjectToCandidates } from '@/lib/matching'
 import { deleteProject } from '@/lib/actions/projects'
 import { DeleteButton } from '@/components/ui/DeleteButton'
 import { ReceivedProjectsSection } from '@/components/projects/ReceivedProjectsSection'
+import { CopyProjectButton } from '@/components/projects/CopyProjectButton'
 
 async function getProject(id: string) {
   return prisma.project.findUnique({
@@ -82,6 +83,17 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
         <Link href={`/projects/${params.id}/edit`} className="btn-primary btn-sm">
           <Edit className="w-3.5 h-3.5" />編集
         </Link>
+        <CopyProjectButton
+          title={project.title}
+          clientName={project.clientName}
+          workStyle={project.workStyle}
+          workHours={project.workHours}
+          rateText={formatRateNew(project.rateType, project.rateMin ?? project.desiredRate, project.rateMax)}
+          startDate={project.startDate ? formatDate(project.startDate) : null}
+          description={project.description}
+          requiredSkills={project.requiredSkills}
+          workConditions={project.workConditions}
+        />
         <form action={deleteProjectAction}>
           <DeleteButton label="削除" />
         </form>
