@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { DashboardShell } from '@/components/layout/DashboardShell'
 import { CandidateStatusBadge, WorkStyleBadge, ActionStatusBadge } from '@/components/ui/StatusBadge'
 import { ActionStatusInline } from '@/components/candidates/ActionStatusInline'
+import { CandidateNameTooltip } from '@/components/candidates/CandidateNameTooltip'
 import { formatDate, formatDateTime, formatRate } from '@/lib/utils'
 import Link from 'next/link'
 import { Plus, Search, Trophy, PauseCircle, XCircle } from 'lucide-react'
@@ -96,16 +97,23 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
                 candidates.map((c) => (
                   <tr key={c.id} className="hover:bg-blue-50 transition-colors">
                     <td className="px-4 py-3">
-                      <Link href={`/candidates/${c.id}`} className="font-medium text-blue-700 hover:underline">
-                        {c.name}
-                      </Link>
-                      {c.documents[0] && (
-                        <a href={c.documents[0].filePath} target="_blank" rel="noopener noreferrer"
-                          className="ml-1.5 text-xs text-green-600 hover:underline inline-flex items-center gap-0.5"
-                          title={c.documents[0].fileName}>
-                          📎
-                        </a>
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        <CandidateNameTooltip
+                          id={c.id}
+                          name={c.name}
+                          desiredHourlyRate={c.desiredHourlyRate}
+                          minimumHourlyRate={c.minimumHourlyRate}
+                          preferredWorkHours={c.preferredWorkHours}
+                          availableStartDate={c.availableStartDate}
+                        />
+                        {c.documents[0] && (
+                          <a href={c.documents[0].filePath} target="_blank" rel="noopener noreferrer"
+                            className="text-xs text-green-600 hover:underline inline-flex items-center gap-0.5"
+                            title={c.documents[0].fileName}>
+                            📎
+                          </a>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-gray-600">{c.client?.name ?? '-'}</td>
                     <td className="px-4 py-3 text-gray-600">{c.age ? `${c.age}歳` : '-'}</td>
