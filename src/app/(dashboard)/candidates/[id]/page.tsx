@@ -8,8 +8,6 @@ import { Edit, Plus, AlertCircle, MessageCircle, FileText } from 'lucide-react'
 import { matchCandidateToProjects } from '@/lib/matching'
 import { DeleteButton } from '@/components/ui/DeleteButton'
 import { deleteCandidate } from '@/lib/actions/candidates'
-import { parseNotes } from '@/lib/notes'
-import { NotesEditor } from '@/components/candidates/NotesEditor'
 import { LineSendButton } from '@/components/candidates/LineSendButton'
 import { isLineConfigured } from '@/lib/line'
 import { ProjectLinksSection } from '@/components/candidates/ProjectLinksSection'
@@ -228,13 +226,6 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
               </div>
             )}
 
-            <div className="mt-3 pt-3 border-t border-gray-100">
-              <p className="text-sm text-gray-500 mb-2">付箋メモ</p>
-              <NotesEditor
-                candidateId={candidate.id}
-                initialNotes={parseNotes(candidate.notes)}
-              />
-            </div>
           </div>
 
           {/* スキル詳細 */}

@@ -14,12 +14,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { content, color } = await req.json()
+    const { content, color, author } = await req.json()
     if (!content?.trim()) {
       return NextResponse.json({ error: '内容を入力してください' }, { status: 400 })
     }
     const note = await prisma.stickyNote.create({
-      data: { content: content.trim(), color: color ?? 'yellow' },
+      data: { content: content.trim(), color: color ?? 'yellow', author: author ?? '' },
     })
     return NextResponse.json(note)
   } catch {
