@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { FileText, Eye, EyeOff, ExternalLink } from 'lucide-react'
+import { PdfPreview } from './PdfPreview'
 
 interface Doc {
   id: string
@@ -41,14 +42,11 @@ export default function DocumentViewer({ doc }: { doc: Doc }) {
         </div>
       </div>
 
-      {/* PDFインラインプレビュー */}
+      {/* PDFインラインプレビュー（ズーム対応） */}
       {open && isPdf && (
-        <iframe
-          src={doc.filePath}
-          className="w-full border-t border-gray-100"
-          style={{ height: '480px' }}
-          title={doc.fileName}
-        />
+        <div className="border-t border-gray-100">
+          <PdfPreview src={doc.filePath} title={doc.fileName} />
+        </div>
       )}
 
       {/* PDF以外はプレビュー非対応メッセージ */}

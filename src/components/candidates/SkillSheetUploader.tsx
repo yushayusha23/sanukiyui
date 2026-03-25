@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Upload, Loader2, CheckCircle, AlertCircle, FileText, Paperclip, Sparkles, X, Eye, EyeOff } from 'lucide-react'
+import { PdfPreview } from './PdfPreview'
 
 interface ExtractedData {
   name?: string
@@ -161,14 +162,10 @@ export function SkillSheetUploader({ onExtracted, onFileSelected }: SkillSheetUp
             <button type="button" onClick={reset}><X className="w-3.5 h-3.5 text-gray-300 hover:text-gray-500" /></button>
           </div>
 
-          {/* PDFプレビュー */}
+          {/* PDFプレビュー（ズーム対応） */}
           {previewOpen && previewUrl && (
             <div className="border-t border-gray-100">
-              <iframe
-                src={previewUrl}
-                className="w-full h-80 block"
-                title="スキルシートプレビュー"
-              />
+              <PdfPreview src={previewUrl} title="スキルシートプレビュー" height={360} />
             </div>
           )}
 
