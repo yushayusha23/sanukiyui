@@ -120,10 +120,12 @@ function ProjectRow({ p }: { p: Project }) {
         </div>
         <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
           <WorkStyleBadge style={p.workStyle} />
+          {p.workHours && <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full whitespace-nowrap">{p.workHours}</span>}
           <span className="text-xs text-gray-500">{formatRateNew(p.rateType, p.rateMin ?? p.desiredRate, p.rateMax)}</span>
           <ProjectStatusBadge status={p.status} />
         </div>
-        <div className="sm:hidden flex-shrink-0">
+        <div className="sm:hidden flex items-center gap-2 flex-shrink-0">
+          {p.workHours && <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full whitespace-nowrap">{p.workHours}</span>}
           <ProjectStatusBadge status={p.status} />
         </div>
       </div>
