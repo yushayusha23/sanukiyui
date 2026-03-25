@@ -99,12 +99,9 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
       <div className="card p-6">
         <h3 className="section-title">基本情報</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* 氏名 + スキルシート横並び */}
-          <div className={!candidate ? 'sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 items-start' : 'sm:col-span-2'}>
+          <div className={!candidate ? 'sm:col-span-2 grid grid-cols-2 gap-3 items-end' : 'sm:col-span-2'}>
             <div>
-              <label className="form-label">
-                氏名 <span className="text-red-500">*</span>
-              </label>
+              <label className="form-label">氏名 <span className="text-red-500">*</span></label>
               <input
                 name="name"
                 required
@@ -115,7 +112,7 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
             </div>
             {!candidate && (
               <div>
-                <label className="form-label">スキルシート</label>
+                <label className="form-label">🦕 スキルシート</label>
                 <SkillSheetUploader onExtracted={handleExtracted} onFileSelected={(f) => setPendingFile(f)} />
               </div>
             )}
