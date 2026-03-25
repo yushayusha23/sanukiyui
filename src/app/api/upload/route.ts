@@ -19,8 +19,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'ファイルまたは求職者IDが必要です' }, { status: 400 })
   }
 
-  if (file.type !== 'application/pdf') {
-    return NextResponse.json({ error: 'PDFファイルのみアップロード可能です' }, { status: 400 })
+  const name = file.name.toLowerCase()
+  const supported = name.endsWith('.pdf') || name.endsWith('.xlsx') || name.endsWith('.xls') ||
+    name.endsWith('.docx') || name.endsWith('.doc') || name.endsWith('.csv')
+  if (!supported) {
+    return NextResponse.json({ error: 'PDF / Excel / Word / CSV のみアップロード可能です' }, { status: 400 })
   }
 
   if (file.size > 10 * 1024 * 1024) {
@@ -40,7 +43,7 @@ export async function POST(request: NextRequest) {
       candidateId,
       fileName: file.name,
       filePath: `/uploads/${candidateId}/${fileName}`,
-      fileType: 'pdf',
+      fileType: file.name.split('.').pop() ?? 'pdf',
     },
   })
 

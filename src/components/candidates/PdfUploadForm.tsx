@@ -17,33 +17,38 @@ export default function PdfUploadForm({ candidateId }: { candidateId: string }) 
     setError('')
     setUploading(true)
 
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('candidateId', candidateId)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('candidateId', candidateId)
 
-    const res = await fetch('/api/upload', { method: 'POST', body: formData })
-    const json = await res.json()
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const text = await res.text()
+      let json: { error?: string } = {}
+      try { json = JSON.parse(text) } catch { /* empty */ }
 
-    setUploading(false)
-
-    if (!res.ok) {
-      setError(json.error ?? 'アップロードに失敗しました')
-    } else {
-      router.refresh()
+      if (!res.ok) {
+        setError(json.error ?? 'アップロードに失敗しました')
+      } else {
+        router.refresh()
+      }
+    } catch {
+      setError('アップロードに失敗しました')
+    } finally {
+      setUploading(false)
+      if (inputRef.current) inputRef.current.value = ''
     }
-
-    if (inputRef.current) inputRef.current.value = ''
   }
 
   return (
     <div>
       <label className="btn-secondary btn-sm cursor-pointer inline-flex items-center gap-2">
         <Upload className="w-3.5 h-3.5" />
-        {uploading ? 'アップロード中...' : 'PDFを追加'}
+        {uploading ? '送信中...' : 'ファイルを追加'}
         <input
           ref={inputRef}
           type="file"
-          accept=".pdf"
+          accept=".pdf,.xlsx,.xls,.docx,.doc,.csv"
           className="hidden"
           onChange={handleUpload}
           disabled={uploading}
