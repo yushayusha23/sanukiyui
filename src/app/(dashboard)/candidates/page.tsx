@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { DashboardShell } from '@/components/layout/DashboardShell'
 import { CandidateStatusBadge, WorkStyleBadge, ActionStatusBadge } from '@/components/ui/StatusBadge'
+import { ActionStatusInline } from '@/components/candidates/ActionStatusInline'
 import { formatDate, formatDateTime, formatRate } from '@/lib/utils'
 import Link from 'next/link'
 import { Plus, Search, Trophy, PauseCircle, XCircle } from 'lucide-react'
@@ -117,7 +118,9 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
                     </td>
                     <td className="px-4 py-3 text-gray-600">{formatRate(c.desiredHourlyRate)}</td>
                     <td className="px-4 py-3"><CandidateStatusBadge status={c.status} /></td>
-                    <td className="px-4 py-3"><ActionStatusBadge status={c.actionStatus} /></td>
+                    <td className="px-4 py-3">
+                      <ActionStatusInline candidateId={c.id} current={c.actionStatus ?? null} />
+                    </td>
                     <td className="px-4 py-3 text-gray-600">{formatDate(c.confirmedInterviewDate)}</td>
                     <td className="px-4 py-3 text-gray-600">{formatDate(c.availableStartDate)}</td>
                     <td className="px-4 py-3 text-gray-400 text-xs">{formatDate(c.updatedAt)}</td>
@@ -150,7 +153,7 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <CandidateStatusBadge status={c.status} />
-                  <ActionStatusBadge status={c.actionStatus} />
+                  <ActionStatusInline candidateId={c.id} current={c.actionStatus ?? null} />
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-wrap text-sm text-gray-600">

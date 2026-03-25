@@ -132,6 +132,55 @@ export async function updateCandidate(id: string, formData: FormData) {
   redirect(`/candidates/${id}`)
 }
 
+export async function updateActionStatus(id: string, actionStatus: string | null) {
+  await requireAuth()
+  await prisma.candidate.update({
+    where: { id },
+    data: { actionStatus: actionStatus || null },
+  })
+  revalidatePath('/candidates')
+  revalidatePath(`/candidates/${id}`)
+}
+
+export async function addNote(id: string, text: string, author: string) {
+  await requireAuth()
+  const candidate = await prisma.candidate.findUnique({ where: { id }, select: { notes: true } })
+  const existing = parseNotes(candidate?.notes ?? null)
+  const newEntry: NoteEntry = { text: text.trim(), at: new Date().toISOString(), by: author.trim() }
+  const updated = [...existing, newEntry]
+  await prisma.candidate.update({
+    where: { id },
+    data: { notes: JSON.stringify(updated) },
+  })
+  revalidatePath('/candidates')
+  revalidatePath(`/candidates/${id}`)
+}
+
+export async function deleteNote(id: string, index: number) {
+  await requireAuth()
+  const candidate = await prisma.candidate.findUnique({ where: { id }, select: { notes: true } })
+  const existing = parseNotes(candidate?.notes ?? null)
+  existing.splice(index, 1)
+  await prisma.candidate.update({
+    where: { id },
+    data: { notes: existing.length ? JSON.stringify(existing) : null },
+  })
+  revalidatePath('/candidates')
+  revalidatePath(`/candidates/${id}`)
+}
+
+export type NoteEntry = { text: string; at: string; by: string }
+
+export function parseNotes(raw: string | null): NoteEntry[] {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) return parsed
+  } catch {}
+  // レガシー文字列はそのまま1エントリとして扱う
+  return [{ text: raw, at: '', by: '' }]
+}
+
 export async function deleteCandidate(id: string) {
   await requireAuth()
   await prisma.candidate.delete({ where: { id } })

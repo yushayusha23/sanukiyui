@@ -37,7 +37,7 @@ model Candidate {
   confirmedInterviewDate DateTime?
   status                 String    @default("APPLIED")
   actionStatus           String?   // PROPOSAL_NEEDED | WAITING_CANDIDATE | WAITING_CLIENT
-  notes                  String?
+  notes                  String?   // JSON: [{text,at,by}] 形式 or レガシー文字列
   lineUserId             String?   // LINE ユーザーID (Uxxxxx...)
   clientId               String?   // クライアント紐づけ
   createdAt              DateTime  @default(now())

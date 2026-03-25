@@ -289,16 +289,8 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
             />
           </div>
 
-          <div className="sm:col-span-2">
-            <label className="form-label">備考・メモ</label>
-            <textarea
-              name="notes"
-              rows={2}
-              defaultValue={candidate?.notes ?? ''}
-              className="form-textarea"
-              placeholder="特記事項など..."
-            />
-          </div>
+          {/* 付箋は詳細ページで管理するため、登録フォームには非表示 */}
+          <input type="hidden" name="notes" value={candidate?.notes ?? ''} />
 
           <div className="sm:col-span-2">
             <label className="form-label flex items-center gap-1.5">
