@@ -224,12 +224,25 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
 
           <div>
             <label className="form-label">希望稼働時間</label>
-            <select name="preferredWorkHours" defaultValue={candidate?.preferredWorkHours ?? ''} className="form-select">
-              <option value="">選択してください</option>
-              {WORK_HOURS_OPTIONS.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+            <div className="flex gap-2">
+              <input
+                name="preferredWorkHours"
+                defaultValue={candidate?.preferredWorkHours ?? ''}
+                className="form-input flex-1"
+                placeholder="例: 160h、時短、フルタイム"
+                list="workHoursSuggestions"
+              />
+              <datalist id="workHoursSuggestions">
+                {WORK_HOURS_OPTIONS.map((s) => (
+                  <option key={s} value={s} />
+                ))}
+                <option value="140h" />
+                <option value="150h" />
+                <option value="160h" />
+                <option value="180h" />
+                <option value="200h" />
+              </datalist>
+            </div>
           </div>
 
           <div>
