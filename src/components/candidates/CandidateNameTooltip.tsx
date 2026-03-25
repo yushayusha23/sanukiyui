@@ -36,8 +36,8 @@ export function CandidateNameTooltip({ id, name, desiredHourlyRate, minimumHourl
     if (ref.current) {
       const rect = ref.current.getBoundingClientRect()
       setPos({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
+        top: rect.bottom + 4,
+        left: rect.left,
       })
     }
     setShow(true)
@@ -45,7 +45,7 @@ export function CandidateNameTooltip({ id, name, desiredHourlyRate, minimumHourl
 
   const tooltip = show && mounted ? createPortal(
     <div
-      style={{ position: 'absolute', top: pos.top, left: pos.left, zIndex: 9999 }}
+      style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }}
       className="bg-white border border-gray-200 rounded-lg shadow-xl p-3 min-w-[190px] pointer-events-none"
     >
       <div className="space-y-1.5 text-xs">
