@@ -29,9 +29,9 @@ type CandidateForMatch = {
     isYears: number | null
     ifYears: number | null   // FS経験年数
     saasYears: number | null
-    hasToBExperience?: boolean
-    hasToCExperience?: boolean
-    customTags?: string | null
+    toBYears?: number | null
+    toCYears?: number | null
+    customExperiences?: string | null
     tools: string | null
     freeSkillNote: string | null
     strengths: string | null
@@ -95,14 +95,20 @@ function getProjectText(project: ProjectForMatch): string {
     .toLowerCase()
 }
 
-/** 候補者の全スキルテキスト（スキル詳細 + 職歴 + カスタムタグ）を結合 */
+/** 候補者の全スキルテキスト（スキル詳細 + 職歴 + カスタム経験）を結合 */
 function getCandidateSkillText(candidate: CandidateForMatch): string {
   const sd = candidate.skillDetails
+  // customExperiences から名前だけ抽出 "営業:3|CS:0" → "営業 CS"
+  const customLabels = sd?.customExperiences
+    ?.split('|')
+    .map((part) => part.split(':')[0].trim())
+    .filter(Boolean)
+    .join(' ') ?? ''
   return [
     sd?.strengths,
     sd?.otherBpoExperience,
     sd?.freeSkillNote,
-    sd?.customTags,
+    customLabels,
     candidate.workHistory,
   ]
     .filter(Boolean)
@@ -120,58 +126,72 @@ function scoreMatch(
   const sd = candidate.skillDetails
   const projectText = getProjectText(project)
 
-  // ===== 1. IS経験年数マッチング (最大20点) =====
-  if (sd?.isYears && sd.isYears > 0) {
+  // ===== 1. IS経験マッチング (最大20点) =====
+  // isYears: null=なし, 0=あり(年数不明), 正数=N年
+  if (sd?.isYears != null) {
     const required =
       project.isYearsRequired ??
       detectRequiredYears(project.requiredSkills, ['is', 'インサイドセールス', 'inside sales', 'テレアポ'])
-    if (required !== null && required > 0) {
-      const s = calcYearsScore(sd.isYears, required, 20)
-      if (s > 0) {
-        score += s
-        reasons.push(`IS経験${sd.isYears}年 (必要${required}年)`)
+    if (sd.isYears > 0) {
+      if (required !== null && required > 0) {
+        const s = calcYearsScore(sd.isYears, required, 20)
+        if (s > 0) { score += s; reasons.push(`IS経験${sd.isYears}年 (必要${required}年)`) }
+      } else if (keywordMatch(projectText, ['is', 'インサイドセールス', 'inside sales', 'テレアポ'])) {
+        score += Math.min(15, sd.isYears * 4)
+        reasons.push(`IS経験${sd.isYears}年`)
       }
-    } else if (keywordMatch(projectText, ['is', 'インサイドセールス', 'inside sales', 'テレアポ'])) {
-      score += Math.min(15, sd.isYears * 4)
-      reasons.push(`IS経験${sd.isYears}年`)
+    } else {
+      // 年数不明だが経験あり
+      if (keywordMatch(projectText, ['is', 'インサイドセールス', 'inside sales', 'テレアポ'])) {
+        score += 8
+        reasons.push('IS経験あり')
+      }
     }
   } else if (project.isYearsRequired && project.isYearsRequired > 0) {
     reasons.push(`⚠ IS経験不足 (必要${project.isYearsRequired}年)`)
   }
 
-  // ===== 2. FS経験年数マッチング (最大20点) =====
-  if (sd?.ifYears && sd.ifYears > 0) {
+  // ===== 2. FS経験マッチング (最大20点) =====
+  if (sd?.ifYears != null) {
     const required =
       project.fsYearsRequired ??
       detectRequiredYears(project.requiredSkills, ['fs', 'フィールドセールス', 'field sales'])
-    if (required !== null && required > 0) {
-      const s = calcYearsScore(sd.ifYears, required, 20)
-      if (s > 0) {
-        score += s
-        reasons.push(`FS経験${sd.ifYears}年 (必要${required}年)`)
+    if (sd.ifYears > 0) {
+      if (required !== null && required > 0) {
+        const s = calcYearsScore(sd.ifYears, required, 20)
+        if (s > 0) { score += s; reasons.push(`FS経験${sd.ifYears}年 (必要${required}年)`) }
+      } else if (keywordMatch(projectText, ['fs', 'フィールドセールス', 'field sales'])) {
+        score += Math.min(15, sd.ifYears * 4)
+        reasons.push(`FS経験${sd.ifYears}年`)
       }
-    } else if (keywordMatch(projectText, ['fs', 'フィールドセールス', 'field sales'])) {
-      score += Math.min(15, sd.ifYears * 4)
-      reasons.push(`FS経験${sd.ifYears}年`)
+    } else {
+      if (keywordMatch(projectText, ['fs', 'フィールドセールス', 'field sales'])) {
+        score += 8
+        reasons.push('FS経験あり')
+      }
     }
   } else if (project.fsYearsRequired && project.fsYearsRequired > 0) {
     reasons.push(`⚠ FS経験不足 (必要${project.fsYearsRequired}年)`)
   }
 
-  // ===== 3. SaaS経験年数マッチング (最大15点) =====
-  if (sd?.saasYears && sd.saasYears > 0) {
+  // ===== 3. SaaS経験マッチング (最大15点) =====
+  if (sd?.saasYears != null) {
     const required =
       project.saasYearsRequired ??
       detectRequiredYears(project.requiredSkills, ['saas', 'さーす'])
-    if (required !== null && required > 0) {
-      const s = calcYearsScore(sd.saasYears, required, 15)
-      if (s > 0) {
-        score += s
-        reasons.push(`SaaS経験${sd.saasYears}年 (必要${required}年)`)
+    if (sd.saasYears > 0) {
+      if (required !== null && required > 0) {
+        const s = calcYearsScore(sd.saasYears, required, 15)
+        if (s > 0) { score += s; reasons.push(`SaaS経験${sd.saasYears}年 (必要${required}年)`) }
+      } else if (keywordMatch(projectText, ['saas', 'さーす'])) {
+        score += Math.min(10, sd.saasYears * 4)
+        reasons.push(`SaaS経験${sd.saasYears}年`)
       }
-    } else if (keywordMatch(projectText, ['saas', 'さーす'])) {
-      score += Math.min(10, sd.saasYears * 4)
-      reasons.push(`SaaS経験${sd.saasYears}年`)
+    } else {
+      if (keywordMatch(projectText, ['saas', 'さーす'])) {
+        score += 6
+        reasons.push('SaaS経験あり')
+      }
     }
   } else if (project.saasYearsRequired && project.saasYearsRequired > 0) {
     reasons.push(`⚠ SaaS経験不足 (必要${project.saasYearsRequired}年)`)
@@ -204,27 +224,32 @@ function scoreMatch(
   const toBKeywords = ['btob', 'b2b', 'tob', '法人営業', '法人向け', '企業向け', 'エンタープライズ', 'enterprise']
   const toCKeywords = ['btoc', 'b2c', 'toc', '個人営業', '個人向け', 'コンシューマ', 'consumer']
 
-  if (sd?.hasToBExperience && keywordMatch(projectText, toBKeywords)) {
-    score += 10
-    reasons.push('BtoB経験あり')
-  } else if (sd?.hasToBExperience && !keywordMatch(projectText, toCKeywords)) {
-    // ToB経験があり、ToC特化案件でない場合は軽くボーナス
-    score += 4
-    reasons.push('BtoB経験あり')
+  if (sd?.toBYears != null) {
+    // toBYears が設定されている = BtoB経験あり
+    if (keywordMatch(projectText, toBKeywords)) {
+      score += 10
+      reasons.push(sd.toBYears > 0 ? `BtoB経験${sd.toBYears}年` : 'BtoB経験あり')
+    } else if (!keywordMatch(projectText, toCKeywords)) {
+      score += 4
+      reasons.push(sd.toBYears > 0 ? `BtoB経験${sd.toBYears}年` : 'BtoB経験あり')
+    }
   }
 
-  if (sd?.hasToCExperience && keywordMatch(projectText, toCKeywords)) {
+  if (sd?.toCYears != null && keywordMatch(projectText, toCKeywords)) {
     score += 8
-    reasons.push('BtoC経験あり')
+    reasons.push(sd.toCYears > 0 ? `BtoC経験${sd.toCYears}年` : 'BtoC経験あり')
   }
 
-  // ===== 7. カスタムタグ マッチング (最大8点) =====
-  if (sd?.customTags && projectText) {
-    const tags = sd.customTags.toLowerCase().split(/[,、\s]+/).filter((t) => t.length > 1)
-    const tagMatches = tags.filter((t) => projectText.includes(t))
+  // ===== 7. カスタム経験マッチング (最大8点) =====
+  if (sd?.customExperiences && projectText) {
+    const customLabels = sd.customExperiences
+      .split('|')
+      .map((part) => part.split(':')[0].trim().toLowerCase())
+      .filter((t) => t.length > 0)
+    const tagMatches = customLabels.filter((t) => projectText.includes(t))
     if (tagMatches.length > 0) {
       score += Math.min(8, tagMatches.length * 3)
-      reasons.push(`タグ一致: ${tagMatches.join(', ')}`)
+      reasons.push(`経験一致: ${tagMatches.join(', ')}`)
     }
   }
 

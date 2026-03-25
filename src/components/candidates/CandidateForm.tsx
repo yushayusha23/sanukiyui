@@ -5,14 +5,15 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CANDIDATE_STATUS, WORK_STYLE_OPTIONS, WORK_HOURS_OPTIONS } from '@/types'
 import { SkillSheetUploader } from './SkillSheetUploader'
+import { ExperienceEditor } from './ExperienceEditor'
 
 type SkillDetails = {
   isYears?: number | null
   ifYears?: number | null
   saasYears?: number | null
-  hasToBExperience?: boolean
-  hasToCExperience?: boolean
-  customTags?: string | null
+  toBYears?: number | null
+  toCYears?: number | null
+  customExperiences?: string | null
   otherBpoExperience?: string | null
   tools?: string | null
   strengths?: string | null
@@ -311,78 +312,12 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
       {/* スキル詳細 */}
       <div className="card p-6">
         <h3 className="section-title">スキル詳細</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-          <div>
-            <label className="form-label">IS経験年数</label>
-            <input
-              name="isYears"
-              type="number"
-              min="0"
-              step="0.5"
-              defaultValue={sd?.isYears ?? ''}
-              className="form-input"
-              placeholder="3.0"
-            />
-          </div>
-          <div>
-            <label className="form-label">FS経験年数</label>
-            <input
-              name="ifYears"
-              type="number"
-              min="0"
-              step="0.5"
-              defaultValue={sd?.ifYears ?? ''}
-              className="form-input"
-              placeholder="2.0"
-            />
-          </div>
-          <div>
-            <label className="form-label">SaaS経験年数</label>
-            <input
-              name="saasYears"
-              type="number"
-              min="0"
-              step="0.5"
-              defaultValue={sd?.saasYears ?? ''}
-              className="form-input"
-              placeholder="1.0"
-            />
-          </div>
-        </div>
 
-        {/* 経験タイプ */}
-        <div className="mb-4">
-          <label className="form-label mb-2">経験タイプ</label>
-          <div className="flex flex-wrap gap-3">
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                name="hasToBExperience"
-                defaultChecked={sd?.hasToBExperience ?? false}
-                className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
-              />
-              <span className="text-sm text-gray-700 font-medium">BtoB経験あり</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                name="hasToCExperience"
-                defaultChecked={sd?.hasToCExperience ?? false}
-                className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
-              />
-              <span className="text-sm text-gray-700 font-medium">BtoC経験あり</span>
-            </label>
-          </div>
-          <div className="mt-3">
-            <label className="form-label">カスタムタグ（自由入力）</label>
-            <input
-              name="customTags"
-              defaultValue={sd?.customTags ?? ''}
-              className="form-input"
-              placeholder="例: テレアポ, チャットサポート, CRM構築"
-            />
-            <p className="text-xs text-gray-400 mt-1">カンマ区切りで複数入力できます。マッチング時のキーワードとして使用されます。</p>
-          </div>
+        {/* 経験 */}
+        <div className="mb-5">
+          <label className="form-label mb-2">経験</label>
+          <p className="text-xs text-gray-400 mb-3">チェックで経験あり。年数は任意入力（空白でも可）。</p>
+          <ExperienceEditor defaultData={sd ?? undefined} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

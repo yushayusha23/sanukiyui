@@ -55,12 +55,12 @@ model CandidateSkillDetail {
   id                 String    @id @default(cuid())
   candidateId        String    @unique
   candidate          Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  isYears            Float?    // インサイドセールス経験年数
-  ifYears            Float?    // フィールドセールス経験年数
+  isYears            Float?    // IS経験年数（null=なし, 0=あり年数不明, 正数=N年）
+  ifYears            Float?    // FS経験年数
   saasYears          Float?    // SaaS経験年数
-  hasToBExperience   Boolean   @default(false) // BtoB経験あり
-  hasToCExperience   Boolean   @default(false) // BtoC経験あり
-  customTags         String?   // カスタムタグ（カンマ区切り、自由入力）
+  toBYears           Float?    // BtoB経験年数
+  toCYears           Float?    // BtoC経験年数
+  customExperiences  String?   // カスタム経験項目 "名前:年数|名前:|名前:2" 形式
   otherBpoExperience String?   // その他BPO関連経験
   tools              String?   // 使用ツール（カンマ区切り）
   strengths          String?   // 得意領域

@@ -45,9 +45,9 @@ export async function createCandidate(formData: FormData) {
       isYears: data.isYears,
       ifYears: data.ifYears,
       saasYears: data.saasYears,
-      hasToBExperience: data.hasToBExperience,
-      hasToCExperience: data.hasToCExperience,
-      customTags: data.customTags,
+      toBYears: data.toBYears,
+      toCYears: data.toCYears,
+      customExperiences: data.customExperiences,
       otherBpoExperience: data.otherBpoExperience,
       tools: data.tools,
       strengths: data.strengths,
@@ -107,33 +107,22 @@ export async function updateCandidate(id: string, formData: FormData) {
     },
   })
 
+  const skillData = {
+    isYears: data.isYears,
+    ifYears: data.ifYears,
+    saasYears: data.saasYears,
+    toBYears: data.toBYears,
+    toCYears: data.toCYears,
+    customExperiences: data.customExperiences,
+    otherBpoExperience: data.otherBpoExperience,
+    tools: data.tools,
+    strengths: data.strengths,
+    freeSkillNote: data.freeSkillNote,
+  }
   await prisma.candidateSkillDetail.upsert({
     where: { candidateId: id },
-    update: {
-      isYears: data.isYears,
-      ifYears: data.ifYears,
-      saasYears: data.saasYears,
-      hasToBExperience: data.hasToBExperience,
-      hasToCExperience: data.hasToCExperience,
-      customTags: data.customTags,
-      otherBpoExperience: data.otherBpoExperience,
-      tools: data.tools,
-      strengths: data.strengths,
-      freeSkillNote: data.freeSkillNote,
-    },
-    create: {
-      candidateId: id,
-      isYears: data.isYears,
-      ifYears: data.ifYears,
-      saasYears: data.saasYears,
-      hasToBExperience: data.hasToBExperience,
-      hasToCExperience: data.hasToCExperience,
-      customTags: data.customTags,
-      otherBpoExperience: data.otherBpoExperience,
-      tools: data.tools,
-      strengths: data.strengths,
-      freeSkillNote: data.freeSkillNote,
-    },
+    update: skillData,
+    create: { candidateId: id, ...skillData },
   })
 
   revalidatePath(`/candidates/${id}`)
@@ -171,9 +160,25 @@ function extractCandidateData(formData: FormData) {
     const d = new Date(String(val))
     return isNaN(d.getTime()) ? null : d
   }
-  const getBool = (key: string) => {
-    return formData.get(key) === 'on' || formData.get(key) === 'true'
+  // experienceData JSON を解析
+  type ExpItem = { id: string; label: string; years: string; active: boolean; fixed: boolean }
+  let expItems: ExpItem[] = []
+  try {
+    const raw = formData.get('experienceData')
+    if (raw && typeof raw === 'string') expItems = JSON.parse(raw)
+  } catch { /* ignore */ }
+
+  const getExp = (id: string): number | null => {
+    const item = expItems.find((e) => e.id === id && e.active)
+    if (!item) return null
+    const y = parseFloat(item.years)
+    return isNaN(y) ? 0 : y  // チェックあり・年数なし → 0
   }
+
+  const customItems = expItems.filter((e) => !e.fixed && e.active && e.label.trim())
+  const customExperiences = customItems
+    .map((e) => `${e.label.trim()}:${e.years}`)
+    .join('|') || null
 
   return {
     name: getString('name') || '',
@@ -191,12 +196,12 @@ function extractCandidateData(formData: FormData) {
     notes: getString('notes'),
     lineUserId: getString('lineUserId'),
     clientId: getString('clientId'),
-    isYears: getFloat('isYears'),
-    ifYears: getFloat('ifYears'),
-    saasYears: getFloat('saasYears'),
-    hasToBExperience: getBool('hasToBExperience'),
-    hasToCExperience: getBool('hasToCExperience'),
-    customTags: getString('customTags'),
+    isYears: getExp('is'),
+    ifYears: getExp('fs'),
+    saasYears: getExp('saas'),
+    toBYears: getExp('tob'),
+    toCYears: getExp('toc'),
+    customExperiences,
     otherBpoExperience: getString('otherBpoExperience'),
     tools: getString('tools'),
     strengths: getString('strengths'),
