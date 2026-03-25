@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition, useRef } from 'react'
+import { useTransition, useRef, useState } from 'react'
 import Link from 'next/link'
 import { CANDIDATE_STATUS, WORK_STYLE_OPTIONS } from '@/types'
 import { SkillSheetUploader } from './SkillSheetUploader'
@@ -60,11 +60,13 @@ function toDateTimeInputValue(date?: Date | null): string {
 export function CandidateForm({ candidate, action, backHref, clients = [] }: CandidateFormProps) {
   const [pending, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
-
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
+    // 手動添付ファイルをformDataに追加（createCandidate側で処理）
+    if (pendingFile) formData.append('skillSheetFile', pendingFile)
     startTransition(() => action(formData))
   }
 
@@ -97,7 +99,7 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
       {!candidate && (
         <div className="card p-6">
           <h3 className="section-title">🦕 スキルシートから自動入力</h3>
-          <SkillSheetUploader onExtracted={handleExtracted} />
+          <SkillSheetUploader onExtracted={handleExtracted} onFileSelected={(f) => setPendingFile(f)} />
         </div>
       )}
 

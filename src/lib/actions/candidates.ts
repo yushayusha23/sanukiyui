@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation'
 import { prisma } from '../prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth'
+import { writeFile, mkdir } from 'fs/promises'
+import path from 'path'
 
 async function requireAuth() {
   const session = await getServerSession(authOptions)
@@ -48,6 +50,28 @@ export async function createCandidate(formData: FormData) {
       freeSkillNote: data.freeSkillNote,
     },
   })
+
+  // 手動添付ファイルがあれば保存
+  const skillSheetFile = formData.get('skillSheetFile') as File | null
+  if (skillSheetFile && skillSheetFile.size > 0) {
+    try {
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads', candidate.id)
+      await mkdir(uploadDir, { recursive: true })
+      const bytes = await skillSheetFile.arrayBuffer()
+      const filePath = path.join(uploadDir, skillSheetFile.name)
+      await writeFile(filePath, Buffer.from(bytes))
+      await prisma.candidateDocument.create({
+        data: {
+          candidateId: candidate.id,
+          fileName: skillSheetFile.name,
+          filePath: `/uploads/${candidate.id}/${skillSheetFile.name}`,
+          fileType: skillSheetFile.name.split('.').pop() || 'pdf',
+        },
+      })
+    } catch (e) {
+      console.error('[File Upload Error]', e)
+    }
+  }
 
   revalidatePath('/candidates')
   redirect(`/candidates/${candidate.id}`)
