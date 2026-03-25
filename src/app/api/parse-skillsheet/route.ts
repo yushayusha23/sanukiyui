@@ -127,11 +127,21 @@ export async function POST(req: NextRequest) {
 スキルシート内容：
 ${fileText.slice(0, 8000)}`
 
-  const message = await client.messages.create({
-    model: 'claude-3-5-haiku-20241022',
-    max_tokens: 1024,
-    messages: [{ role: 'user', content: prompt }],
-  })
+  let message
+  try {
+    message = await client.messages.create({
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: prompt }],
+    })
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'AI解析に失敗しました'
+    // クレジット不足の場合は分かりやすいメッセージに
+    if (msg.includes('credit') || msg.includes('balance')) {
+      return NextResponse.json({ error: 'APIクレジットが不足しています。console.anthropic.com でクレジットを購入してください。' }, { status: 402 })
+    }
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
 
   const responseText = message.content[0].type === 'text' ? message.content[0].text : ''
 

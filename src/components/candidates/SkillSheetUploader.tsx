@@ -68,9 +68,11 @@ export function SkillSheetUploader({ onExtracted, onFileSelected }: SkillSheetUp
     formData.append('file', selectedFile)
     try {
       const res = await fetch('/api/parse-skillsheet', { method: 'POST', body: formData })
-      const json = await res.json()
-      if (!res.ok) throw new Error(json.error || '解析に失敗しました')
-      onExtracted(json.data)
+      const text = await res.text()
+      let json: { error?: string; data?: Record<string, unknown> } = {}
+      try { json = JSON.parse(text) } catch { /* empty */ }
+      if (!res.ok) throw new Error(json.error || `エラーが発生しました (${res.status})`)
+      onExtracted(json.data ?? {})
       setStatus('success')
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : '解析に失敗しました')
