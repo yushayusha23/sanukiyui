@@ -1,7 +1,8 @@
 'use client'
 
-import { useTransition, useRef, useState } from 'react'
+import { useTransition, useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { CANDIDATE_STATUS, WORK_STYLE_OPTIONS } from '@/types'
 import { SkillSheetUploader } from './SkillSheetUploader'
 
@@ -61,12 +62,44 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
   const [pending, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [isDirty, setIsDirty] = useState(false)
+  const router = useRouter()
+
+  // フォームが変更されたらdirtyフラグを立てる
+  useEffect(() => {
+    const form = formRef.current
+    if (!form) return
+    const handler = () => setIsDirty(true)
+    form.addEventListener('input', handler)
+    return () => form.removeEventListener('input', handler)
+  }, [])
+
+  // ファイル添付でもdirty
+  useEffect(() => {
+    if (pendingFile) setIsDirty(true)
+  }, [pendingFile])
+
+  // ブラウザのページ離脱（リロード・タブ閉じる）で確認
+  useEffect(() => {
+    if (!isDirty) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [isDirty])
+
+  function handleCancel() {
+    if (isDirty && !window.confirm('入力内容が保存されていません。ページを離れますか？')) return
+    router.push(backHref)
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
-    // 手動添付ファイルをformDataに追加（createCandidate側で処理）
     if (pendingFile) formData.append('skillSheetFile', pendingFile)
+    setIsDirty(false)
     startTransition(() => action(formData))
   }
 
@@ -349,9 +382,9 @@ export function CandidateForm({ candidate, action, backHref, clients = [] }: Can
         <button type="submit" disabled={pending} className="btn-primary">
           {pending ? '保存中...' : candidate ? '更新する' : '登録する'}
         </button>
-        <Link href={backHref} className="btn-secondary">
+        <button type="button" onClick={handleCancel} className="btn-secondary">
           キャンセル
-        </Link>
+        </button>
       </div>
     </form>
   )
