@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { Upload, Loader2, CheckCircle, AlertCircle, FileText, Paperclip, Sparkles, X } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Upload, Loader2, CheckCircle, AlertCircle, FileText, Paperclip, Sparkles, X, Eye, EyeOff } from 'lucide-react'
 
 interface ExtractedData {
   name?: string
@@ -30,12 +30,22 @@ function isSupported(filename: string) {
     n.endsWith('.docx') || n.endsWith('.doc') || n.endsWith('.csv') || n.endsWith('.txt')
 }
 
+function isPdf(filename: string) {
+  return filename.toLowerCase().endsWith('.pdf')
+}
+
 export function SkillSheetUploader({ onExtracted, onFileSelected }: SkillSheetUploaderProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
   const [status, setStatus] = useState<'idle' | 'ready' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [isDragging, setIsDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    return () => { if (previewUrl) URL.revokeObjectURL(previewUrl) }
+  }, [previewUrl])
 
   function handleFileSelect(file: File) {
     if (!isSupported(file.name)) {
@@ -43,6 +53,11 @@ export function SkillSheetUploader({ onExtracted, onFileSelected }: SkillSheetUp
       setStatus('error')
       return
     }
+    // 旧URLを破棄
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+    const url = isPdf(file.name) ? URL.createObjectURL(file) : null
+    setPreviewUrl(url)
+    setPreviewOpen(!!url) // PDFなら自動的にプレビュー表示
     setSelectedFile(file)
     setStatus('ready')
     setErrorMsg('')
@@ -81,6 +96,9 @@ export function SkillSheetUploader({ onExtracted, onFileSelected }: SkillSheetUp
   }
 
   function reset() {
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+    setPreviewUrl(null)
+    setPreviewOpen(false)
     setSelectedFile(null)
     setStatus('idle')
     setErrorMsg('')
@@ -123,55 +141,75 @@ export function SkillSheetUploader({ onExtracted, onFileSelected }: SkillSheetUp
         </div>
       )}
 
-      {/* ファイル選択済み → 操作ボタン表示 */}
-      {status === 'ready' && selectedFile && (
-        <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-          <div className="flex items-center gap-2 mb-3">
+      {/* ファイル選択済み */}
+      {(status === 'ready' || status === 'success' || status === 'loading') && selectedFile && (
+        <div className="border border-gray-200 rounded-lg overflow-hidden">
+          {/* ファイル名バー */}
+          <div className="flex items-center gap-2 px-3 py-2 bg-gray-50">
             <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <p className="text-xs text-gray-600 flex-1 truncate">{selectedFile.name}</p>
+            {isPdf(selectedFile.name) && (
+              <button
+                type="button"
+                onClick={() => setPreviewOpen(o => !o)}
+                className="text-xs text-green-600 hover:text-green-800 flex items-center gap-1 flex-shrink-0"
+              >
+                {previewOpen ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                {previewOpen ? '隠す' : '確認'}
+              </button>
+            )}
             <button type="button" onClick={reset}><X className="w-3.5 h-3.5 text-gray-300 hover:text-gray-500" /></button>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={handleManual}
-              className="flex items-center justify-center gap-1.5 py-2 px-3 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-100 transition-colors"
-            >
-              <Paperclip className="w-3.5 h-3.5" />
-              添付のみ
-            </button>
-            <button
-              type="button"
-              onClick={handleAI}
-              className="flex items-center justify-center gap-1.5 py-2 px-3 bg-green-600 rounded-lg text-xs font-medium text-white hover:bg-green-700 transition-colors"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              AI自動入力
-            </button>
-          </div>
-        </div>
-      )}
 
-      {/* AI解析中 */}
-      {status === 'loading' && (
-        <div className="border border-green-200 rounded-lg p-3 bg-green-50">
-          <div className="flex items-center gap-2">
-            <Loader2 className="w-4 h-4 text-green-500 animate-spin flex-shrink-0" />
-            <p className="text-xs text-green-600">AI解析中...</p>
-          </div>
-        </div>
-      )}
+          {/* PDFプレビュー */}
+          {previewOpen && previewUrl && (
+            <div className="border-t border-gray-100">
+              <iframe
+                src={previewUrl}
+                className="w-full h-80 block"
+                title="スキルシートプレビュー"
+              />
+            </div>
+          )}
 
-      {/* 完了 */}
-      {status === 'success' && (
-        <div className="border border-green-200 rounded-lg p-3 bg-green-50 cursor-pointer" onClick={() => inputRef.current?.click()}>
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-            <p className="text-xs text-green-600 flex-1">
-              {selectedFile?.name}
-            </p>
-            <button type="button" onClick={(e) => { e.stopPropagation(); reset() }}><X className="w-3.5 h-3.5 text-green-300 hover:text-green-500" /></button>
-          </div>
+          {/* アクションボタン（未完了時のみ） */}
+          {status === 'ready' && (
+            <div className="grid grid-cols-2 gap-2 p-2 border-t border-gray-100 bg-gray-50">
+              <button
+                type="button"
+                onClick={handleManual}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                <Paperclip className="w-3.5 h-3.5" />
+                添付のみ
+              </button>
+              <button
+                type="button"
+                onClick={handleAI}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 bg-green-600 rounded-lg text-xs font-medium text-white hover:bg-green-700 transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                AI自動入力
+              </button>
+            </div>
+          )}
+
+          {/* AI解析中 */}
+          {status === 'loading' && (
+            <div className="flex items-center gap-2 px-3 py-2 border-t border-gray-100">
+              <Loader2 className="w-4 h-4 text-green-500 animate-spin" />
+              <p className="text-xs text-green-600">AI解析中...</p>
+            </div>
+          )}
+
+          {/* 完了 */}
+          {status === 'success' && (
+            <div className="flex items-center gap-2 px-3 py-2 border-t border-green-100 bg-green-50">
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              <p className="text-xs text-green-600 flex-1">添付済み</p>
+              <button type="button" onClick={() => inputRef.current?.click()} className="text-xs text-gray-400 hover:text-gray-600">変更</button>
+            </div>
+          )}
         </div>
       )}
     </div>

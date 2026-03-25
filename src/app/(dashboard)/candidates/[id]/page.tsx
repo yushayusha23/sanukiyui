@@ -407,7 +407,11 @@ export default async function CandidateDetailPage({ params }: { params: { id: st
   )
 }
 
-// PDF アップロードコンポーネント
+// クライアントコンポーネントとして別ファイルが理想だが、ここに同梱
+import PdfUploadForm from '@/components/candidates/PdfUploadForm'
+import DocumentViewer from '@/components/candidates/DocumentViewer'
+
+// スキルシートセクション
 function PdfUploader({
   candidateId,
   documents,
@@ -422,16 +426,7 @@ function PdfUploader({
       ) : (
         <div className="space-y-2 mb-3">
           {documents.map((doc) => (
-            <a
-              key={doc.id}
-              href={doc.filePath}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 hover:bg-blue-50 transition-colors"
-            >
-              <FileText className="w-4 h-4 text-red-500 flex-shrink-0" />
-              <span className="text-sm text-blue-700 truncate">{doc.fileName}</span>
-            </a>
+            <DocumentViewer key={doc.id} doc={doc} />
           ))}
         </div>
       )}
@@ -439,6 +434,3 @@ function PdfUploader({
     </div>
   )
 }
-
-// クライアントコンポーネントとして別ファイルが理想だが、ここに同梱
-import PdfUploadForm from '@/components/candidates/PdfUploadForm'
