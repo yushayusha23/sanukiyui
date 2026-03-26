@@ -6,8 +6,6 @@ import { prisma } from '../prisma'
 import { parseNotes, type NoteEntry } from '../notes'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
 
 async function requireAuth() {
   const session = await getServerSession(authOptions)
@@ -61,16 +59,26 @@ export async function createCandidate(formData: FormData) {
   const skillSheetFile = formData.get('skillSheetFile') as File | null
   if (skillSheetFile && skillSheetFile.size > 0) {
     try {
-      const uploadDir = path.join(process.cwd(), 'public', 'uploads', candidate.id)
-      await mkdir(uploadDir, { recursive: true })
-      const bytes = await skillSheetFile.arrayBuffer()
-      const filePath = path.join(uploadDir, skillSheetFile.name)
-      await writeFile(filePath, Buffer.from(bytes))
+      let filePath: string
+      if (process.env.BLOB_READ_WRITE_TOKEN) {
+        const { put } = await import('@vercel/blob')
+        const blob = await put(`skillsheets/${candidate.id}/${Date.now()}_${skillSheetFile.name}`, skillSheetFile, { access: 'public' })
+        filePath = blob.url
+      } else {
+        const { writeFile, mkdir } = await import('fs/promises')
+        const path = await import('path')
+        const uploadDir = path.join(process.cwd(), 'public', 'uploads', candidate.id)
+        await mkdir(uploadDir, { recursive: true })
+        const bytes = await skillSheetFile.arrayBuffer()
+        const localPath = path.join(uploadDir, skillSheetFile.name)
+        await writeFile(localPath, Buffer.from(bytes))
+        filePath = `/uploads/${candidate.id}/${skillSheetFile.name}`
+      }
       await prisma.candidateDocument.create({
         data: {
           candidateId: candidate.id,
           fileName: skillSheetFile.name,
-          filePath: `/uploads/${candidate.id}/${skillSheetFile.name}`,
+          filePath,
           fileType: skillSheetFile.name.split('.').pop() || 'pdf',
         },
       })
