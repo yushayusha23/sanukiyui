@@ -153,8 +153,7 @@ function CandidateTable({ candidates }: { candidates: Candidate[] }) {
                     <p className="font-semibold text-gray-900">{c.name}</p>
                     {c.documents[0] && (
                       <a href={c.documents[0].filePath} target="_blank" rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-green-600 text-sm" title={c.documents[0].fileName}>📎</a>
+                        className="text-green-600 text-sm relative z-10" title={c.documents[0].fileName}>📎</a>
                     )}
                   </div>
                   <p className="text-sm text-gray-500">{c.client?.name ?? ''}{c.age ? `　${c.age}歳` : ''}</p>
