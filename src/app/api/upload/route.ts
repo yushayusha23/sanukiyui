@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
+import { put } from '@vercel/blob'
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -30,19 +29,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'ファイルサイズは10MB以下にしてください' }, { status: 400 })
   }
 
-  const uploadDir = path.join(process.cwd(), 'public', 'uploads', candidateId)
-  await mkdir(uploadDir, { recursive: true })
-
-  const fileName = `${Date.now()}_${file.name}`
-  const filePath = path.join(uploadDir, fileName)
-  const buffer = Buffer.from(await file.arrayBuffer())
-  await writeFile(filePath, buffer)
+  const blob = await put(`skillsheets/${candidateId}/${Date.now()}_${file.name}`, file, {
+    access: 'public',
+  })
 
   const doc = await prisma.candidateDocument.create({
     data: {
       candidateId,
       fileName: file.name,
-      filePath: `/uploads/${candidateId}/${fileName}`,
+      filePath: blob.url,
       fileType: file.name.split('.').pop() ?? 'pdf',
     },
   })
