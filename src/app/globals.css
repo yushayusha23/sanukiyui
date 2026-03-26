@@ -43,3 +43,10 @@
     @apply text-base font-semibold text-gray-900 mb-3;
   }
 }
+
+@layer utilities {
+  /* iPhoneホームインジケーター対応 */
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}

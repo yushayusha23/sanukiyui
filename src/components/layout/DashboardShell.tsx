@@ -18,8 +18,8 @@ export function DashboardShell({ title, children }: DashboardShellProps) {
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header title={title} onMenuClick={() => setSidebarOpen(true)} />
-        {/* pb-16 でボトムナビ分の余白を確保（スマホのみ） */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 lg:pb-6">
+        {/* pb-28 でボトムナビ＋iPhoneホームバー分の余白を確保（スマホのみ） */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-28 lg:pb-6">
           {children}
         </main>
       </div>
