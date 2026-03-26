@@ -28,35 +28,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'ファイルサイズは10MB以下にしてください' }, { status: 400 })
   }
 
-  let filePath: string
-
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    // 本番: Vercel Blob
-    const { put } = await import('@vercel/blob')
-    const blob = await put(`skillsheets/${candidateId}/${Date.now()}_${file.name}`, file, {
-      access: 'public',
-    })
-    filePath = blob.url
-  } else {
-    // ローカル開発: ファイルシステム
-    const { writeFile, mkdir } = await import('fs/promises')
-    const path = await import('path')
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', candidateId)
-    await mkdir(uploadDir, { recursive: true })
-    const fileName = `${Date.now()}_${file.name}`
-    const buffer = Buffer.from(await file.arrayBuffer())
-    await writeFile(path.join(uploadDir, fileName), buffer)
-    filePath = `/uploads/${candidateId}/${fileName}`
-  }
+  const buffer = Buffer.from(await file.arrayBuffer())
+  const base64 = buffer.toString('base64')
 
   const doc = await prisma.candidateDocument.create({
     data: {
       candidateId,
       fileName: file.name,
-      filePath,
+      filePath: '',          // あとで id 確定後に更新
+      fileData: base64,
       fileType: file.name.split('.').pop() ?? 'pdf',
     },
   })
 
-  return NextResponse.json({ success: true, document: doc })
+  // filePathにAPIルートのURLをセット
+  const updatedDoc = await prisma.candidateDocument.update({
+    where: { id: doc.id },
+    data: { filePath: `/api/files/${doc.id}` },
+  })
+
+  return NextResponse.json({ success: true, document: updatedDoc })
 }

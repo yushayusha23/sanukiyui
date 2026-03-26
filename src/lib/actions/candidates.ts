@@ -55,32 +55,23 @@ export async function createCandidate(formData: FormData) {
     },
   })
 
-  // 手動添付ファイルがあれば保存
+  // 手動添付ファイルがあれば保存（base64でDB保存）
   const skillSheetFile = formData.get('skillSheetFile') as File | null
   if (skillSheetFile && skillSheetFile.size > 0) {
     try {
-      let filePath: string
-      if (process.env.BLOB_READ_WRITE_TOKEN) {
-        const { put } = await import('@vercel/blob')
-        const blob = await put(`skillsheets/${candidate.id}/${Date.now()}_${skillSheetFile.name}`, skillSheetFile, { access: 'public' })
-        filePath = blob.url
-      } else {
-        const { writeFile, mkdir } = await import('fs/promises')
-        const path = await import('path')
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads', candidate.id)
-        await mkdir(uploadDir, { recursive: true })
-        const bytes = await skillSheetFile.arrayBuffer()
-        const localPath = path.join(uploadDir, skillSheetFile.name)
-        await writeFile(localPath, Buffer.from(bytes))
-        filePath = `/uploads/${candidate.id}/${skillSheetFile.name}`
-      }
-      await prisma.candidateDocument.create({
+      const base64 = Buffer.from(await skillSheetFile.arrayBuffer()).toString('base64')
+      const doc = await prisma.candidateDocument.create({
         data: {
           candidateId: candidate.id,
           fileName: skillSheetFile.name,
-          filePath,
+          filePath: '',
+          fileData: base64,
           fileType: skillSheetFile.name.split('.').pop() || 'pdf',
         },
+      })
+      await prisma.candidateDocument.update({
+        where: { id: doc.id },
+        data: { filePath: `/api/files/${doc.id}` },
       })
     } catch (e) {
       console.error('[File Upload Error]', e)

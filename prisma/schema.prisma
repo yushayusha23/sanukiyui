@@ -77,6 +77,7 @@ model CandidateDocument {
   candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   fileName    String
   filePath    String
+  fileData    String?   // base64エンコードしたファイル本体
   fileType    String    @default("pdf")
   createdAt   DateTime  @default(now())
 }
