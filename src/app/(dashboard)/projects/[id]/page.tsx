@@ -155,6 +155,11 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
             )}
           </div>
 
+          {/* 元テキスト */}
+          {project.sourceText && (
+            <SourceTextCard text={project.sourceText} />
+          )}
+
           {/* もらった案件（受信版） */}
           <ReceivedProjectsSection
             projectId={project.id}
@@ -248,3 +253,6 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
     </DashboardShell>
   )
 }
+
+// 元テキスト表示＋コピーボタン
+import { SourceTextCard } from '@/components/projects/SourceTextCard'
