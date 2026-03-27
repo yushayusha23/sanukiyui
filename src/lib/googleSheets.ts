@@ -16,7 +16,7 @@ function getAuth() {
   })
 }
 
-async function getSheetName(): Promise<string> {
+export async function getSheetName(): Promise<string> {
   const auth = getAuth()
   const sheets = google.sheets({ version: 'v4', auth })
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID })
