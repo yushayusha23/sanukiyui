@@ -81,6 +81,16 @@ export function ProjectForm({ project, action, backHref, clients = [] }: Project
             />
           </div>
 
+          <div>
+            <label className="form-label">元案件（送り元）</label>
+            <input
+              name="sourceClientName"
+              defaultValue={project?.sourceClientName ?? ''}
+              className="form-input"
+              placeholder="紹介元の会社名など"
+            />
+          </div>
+
           {clients.length > 0 && (
             <div>
               <label className="form-label">クライアント紐づけ</label>
