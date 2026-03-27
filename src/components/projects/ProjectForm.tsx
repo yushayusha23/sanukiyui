@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { PROJECT_STATUS, WORK_STYLE_OPTIONS, WORK_HOURS_OPTIONS } from '@/types'
 
 type Project = {
@@ -46,6 +47,7 @@ const RATE_TYPE_OPTIONS = [
 export function ProjectForm({ project, action, backHref, clients = [] }: ProjectFormProps) {
   const [pending, startTransition] = useTransition()
   const [rateType, setRateType] = useState(project?.rateType ?? 'hourly')
+  const [sourceOpen, setSourceOpen] = useState(!!(project?.sourceClientName))
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -78,16 +80,6 @@ export function ProjectForm({ project, action, backHref, clients = [] }: Project
               defaultValue={project?.clientName ?? ''}
               className="form-input"
               placeholder="株式会社〇〇"
-            />
-          </div>
-
-          <div>
-            <label className="form-label">元案件（送り元）</label>
-            <input
-              name="sourceClientName"
-              defaultValue={project?.sourceClientName ?? ''}
-              className="form-input"
-              placeholder="紹介元の会社名など"
             />
           </div>
 
@@ -261,6 +253,36 @@ export function ProjectForm({ project, action, backHref, clients = [] }: Project
             />
           </div>
         </div>
+      </div>
+
+      {/* 元案件詳細（トグル） */}
+      <div className="card overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setSourceOpen(v => !v)}
+          className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-stone-50 transition-colors"
+        >
+          <span className="text-sm font-semibold text-gray-700">元案件詳細</span>
+          {sourceOpen
+            ? <ChevronUp className="w-4 h-4 text-gray-400" />
+            : <ChevronDown className="w-4 h-4 text-gray-400" />
+          }
+        </button>
+        {sourceOpen && (
+          <div className="px-6 pb-6 border-t border-gray-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <div className="sm:col-span-2">
+                <label className="form-label">送り元会社名</label>
+                <input
+                  name="sourceClientName"
+                  defaultValue={project?.sourceClientName ?? ''}
+                  className="form-input"
+                  placeholder="紹介元の会社名など"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-3">
