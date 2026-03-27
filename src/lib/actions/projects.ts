@@ -18,6 +18,14 @@ export async function createProject(formData: FormData) {
 
   const project = await prisma.project.create({ data })
 
+  // スプレッドシートに反映（失敗してもクラッシュしない）
+  try {
+    const { upsertProjectToSheet } = await import('../googleSheets')
+    await upsertProjectToSheet({ id: project.id, title: project.title, description: project.description })
+  } catch (e) {
+    console.error('[sheets sync]', e)
+  }
+
   revalidatePath('/projects')
   redirect(`/projects/${project.id}`)
 }
@@ -26,7 +34,15 @@ export async function updateProject(id: string, formData: FormData) {
   await requireAuth()
   const data = extractProjectData(formData)
 
-  await prisma.project.update({ where: { id }, data })
+  const project = await prisma.project.update({ where: { id }, data })
+
+  // スプレッドシートに反映（失敗してもクラッシュしない）
+  try {
+    const { upsertProjectToSheet } = await import('../googleSheets')
+    await upsertProjectToSheet({ id: project.id, title: project.title, description: project.description })
+  } catch (e) {
+    console.error('[sheets sync]', e)
+  }
 
   revalidatePath(`/projects/${id}`)
   revalidatePath('/projects')
