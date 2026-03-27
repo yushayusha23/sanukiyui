@@ -89,6 +89,7 @@ model Project {
   title             String
   clientName        String?
   sourceClientName  String?
+  sourceText        String?  // 元テキスト（原文そのまま）
   description       String?
   requiredSkills    String?
   workStyle         String?  // フルリモート | 一部出社 | 出社

@@ -10,6 +10,7 @@ type Project = {
   title: string
   clientName?: string | null
   sourceClientName?: string | null
+  sourceText?: string | null
   description?: string | null
   requiredSkills?: string | null
   workStyle?: string | null
@@ -47,7 +48,7 @@ const RATE_TYPE_OPTIONS = [
 export function ProjectForm({ project, action, backHref, clients = [] }: ProjectFormProps) {
   const [pending, startTransition] = useTransition()
   const [rateType, setRateType] = useState(project?.rateType ?? 'hourly')
-  const [sourceOpen, setSourceOpen] = useState(!!(project?.sourceClientName))
+  const [sourceOpen, setSourceOpen] = useState(!!(project?.sourceText))
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -270,16 +271,15 @@ export function ProjectForm({ project, action, backHref, clients = [] }: Project
         </button>
         {sourceOpen && (
           <div className="px-6 pb-6 border-t border-gray-100">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-              <div className="sm:col-span-2">
-                <label className="form-label">送り元会社名</label>
-                <input
-                  name="sourceClientName"
-                  defaultValue={project?.sourceClientName ?? ''}
-                  className="form-input"
-                  placeholder="紹介元の会社名など"
-                />
-              </div>
+            <div className="mt-4">
+              <label className="form-label">元テキスト</label>
+              <textarea
+                name="sourceText"
+                rows={8}
+                defaultValue={project?.sourceText ?? ''}
+                className="form-textarea font-mono text-sm"
+                placeholder="受け取った案件の原文をそのままペーストしてください..."
+              />
             </div>
           </div>
         )}

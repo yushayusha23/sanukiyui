@@ -62,6 +62,7 @@ function extractProjectData(formData: FormData) {
     title: getString('title') || '',
     clientName: getString('clientName'),
     sourceClientName: getString('sourceClientName'),
+    sourceText: getString('sourceText'),
     description: getString('description'),
     requiredSkills: getString('requiredSkills'),
     workStyle: getString('workStyle'),
