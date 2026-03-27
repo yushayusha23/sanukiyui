@@ -4,8 +4,11 @@ const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_SPREADSHEET_ID!
 const SHEET_GID = process.env.GOOGLE_SHEETS_GID ?? '0'
 
 function getAuth() {
-  const privateKey = (process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY ?? '')
-    .replace(/\\n/g, '\n')
+  // B64エンコード版を優先（改行問題を回避）
+  const b64 = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_B64
+  const privateKey = b64
+    ? Buffer.from(b64, 'base64').toString('utf-8')
+    : (process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY ?? '').replace(/\\n/g, '\n')
 
   return new google.auth.GoogleAuth({
     credentials: {
