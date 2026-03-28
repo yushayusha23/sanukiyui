@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { readProjectsFromSheet, upsertProjectToSheet, getSheetName, writeIdToSheet } from '@/lib/googleSheets'
+import { readProjectsFromSheet, upsertProjectToSheet, writeIdToSheetColumn } from '@/lib/googleSheets'
 
 // GET: スプレッドシート → アプリ（Vercel Cron or 手動）
 export async function GET() {
   try {
     const rows = await readProjectsFromSheet()
-    const sheetName = await getSheetName()
     let created = 0
     let updated = 0
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i]
-      const sheetRowNumber = i + 2  // 1行目ヘッダー + 0始まり
+      const colIndex = i + 1 // B列=1, C列=2, ...
 
       if (row.id) {
         // IDあり → 既存案件を更新
@@ -28,18 +27,25 @@ export async function GET() {
           updated++
         }
       } else {
-        // IDなし → 新規作成してIDを書き戻す
-        const project = await prisma.project.create({
-          data: {
-            title: row.title,
-            description: row.description || null,
-            status: 'RECRUITING',
-          },
+        // IDなし → 新規作成してIDをスプレッドシートに書き戻す
+        const existing = await prisma.project.findFirst({
+          where: { title: row.title },
         })
-        await writeIdToSheet(sheetName, sheetRowNumber, project.id)
-        // スプレッドシートにも書き戻し（日時など）
-        await upsertProjectToSheet(project)
-        created++
+        if (existing) {
+          // 同名の案件が既にある場合はIDを書き戻すだけ
+          await writeIdToSheetColumn(colIndex, existing.id)
+          updated++
+        } else {
+          const project = await prisma.project.create({
+            data: {
+              title: row.title,
+              description: row.description || null,
+              status: 'RECRUITING',
+            },
+          })
+          await writeIdToSheetColumn(colIndex, project.id)
+          created++
+        }
       }
     }
 

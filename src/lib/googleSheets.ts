@@ -4,7 +4,6 @@ const SPREADSHEET_ID = (process.env.GOOGLE_SHEETS_SPREADSHEET_ID ?? '').trim()
 const SHEET_GID = (process.env.GOOGLE_SHEETS_GID ?? '0').trim()
 
 function getAuth() {
-  // JSON全体を環境変数から取得（最も確実な方法）
   const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
   if (serviceAccountJson) {
     const creds = JSON.parse(serviceAccountJson)
@@ -13,8 +12,6 @@ function getAuth() {
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     })
   }
-
-  // フォールバック: B64エンコード版
   const b64 = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_B64
   const privateKey = b64
     ? Buffer.from(b64, 'base64').toString('utf-8')
@@ -22,7 +19,7 @@ function getAuth() {
 
   return new google.auth.GoogleAuth({
     credentials: {
-      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      client_email: (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ?? '').trim(),
       private_key: privateKey,
     },
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
@@ -34,32 +31,35 @@ export async function getSheetName(): Promise<string> {
   const sheets = google.sheets({ version: 'v4', auth })
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID })
   const targetGid = parseInt(SHEET_GID, 10)
-  const found = meta.data.sheets?.find(
-    s => s.properties?.sheetId === targetGid
-  )
+  const found = meta.data.sheets?.find(s => s.properties?.sheetId === targetGid)
   return found?.properties?.title ?? meta.data.sheets?.[0]?.properties?.title ?? 'Sheet1'
 }
 
-// スプレッドシートのヘッダー確認＆初期化
-export async function ensureHeaders(sheetName: string) {
-  const auth = getAuth()
-  const sheets = google.sheets({ version: 'v4', auth })
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!A1:D1`,
-  })
-  const row = res.data.values?.[0] ?? []
-  if (row[0] !== '案件名') {
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `${sheetName}!A1:D1`,
-      valueInputOption: 'RAW',
-      requestBody: { values: [['案件名', '案件内容', 'ID', '最終更新']] },
-    })
-  }
+// 列インデックス（0始まり）→ A, B, C... 形式に変換
+function colLetter(index: number): string {
+  let letter = ''
+  let n = index
+  do {
+    letter = String.fromCharCode(65 + (n % 26)) + letter
+    n = Math.floor(n / 26) - 1
+  } while (n >= 0)
+  return letter
 }
 
-// アプリ → スプレッドシート（1件）
+// 全案件の列データを読み込む（列ごと: row1=日付, row2=案件名, row3=案件詳細, row4=AppID）
+async function readAllColumns(sheetName: string) {
+  const auth = getAuth()
+  const sheets = google.sheets({ version: 'v4', auth })
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `'${sheetName}'!A1:ZZ4`,
+    majorDimension: 'COLUMNS', // 列ごとに読み込む
+  })
+  return res.data.values ?? []
+}
+
+// アプリ → スプレッドシート（1件追加/更新）
 export async function upsertProjectToSheet(project: {
   id: string
   title: string
@@ -68,39 +68,52 @@ export async function upsertProjectToSheet(project: {
   const auth = getAuth()
   const sheets = google.sheets({ version: 'v4', auth })
   const sheetName = await getSheetName()
-  await ensureHeaders(sheetName)
 
-  // 既存行を検索（C列 = ID）
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!C:C`,
-  })
-  const ids = res.data.values ?? []
-  const rowIndex = ids.findIndex(r => r[0] === project.id)
+  // 全列を読んでIDが一致する列を探す（row4 = AppID）
+  const columns = await readAllColumns(sheetName)
 
-  const values = [[
-    project.title,
-    project.description ?? '',
-    project.id,
-    new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
-  ]]
+  // 列インデックス（A=0）からIDを検索（row4 = index 3）
+  let targetColIndex = -1
+  for (let i = 1; i < columns.length; i++) {
+    const col = columns[i] ?? []
+    if (col[3] === project.id) {
+      targetColIndex = i
+      break
+    }
+  }
 
-  if (rowIndex >= 1) {
-    // 既存行を更新（rowIndex は 0始まり、シートは 1始まり）
-    await sheets.spreadsheets.values.update({
+  const date = new Date().toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo' })
+
+  if (targetColIndex >= 0) {
+    // 既存列を更新（行1=日付, 行2=案件名, 行3=案件詳細）
+    const col = colLetter(targetColIndex)
+    await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${sheetName}!A${rowIndex + 1}:D${rowIndex + 1}`,
-      valueInputOption: 'RAW',
-      requestBody: { values },
+      requestBody: {
+        valueInputOption: 'RAW',
+        data: [
+          { range: `'${sheetName}'!${col}1`, values: [[date]] },
+          { range: `'${sheetName}'!${col}2`, values: [[project.title]] },
+          { range: `'${sheetName}'!${col}3`, values: [[project.description ?? '']] },
+        ],
+      },
     })
   } else {
-    // 新規行を追加
-    await sheets.spreadsheets.values.append({
+    // 新しい列を末尾に追加
+    const nextColIndex = columns.length // 現在の列数 = 次の列インデックス
+    const col = colLetter(nextColIndex)
+
+    await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${sheetName}!A:D`,
-      valueInputOption: 'RAW',
-      insertDataOption: 'INSERT_ROWS',
-      requestBody: { values },
+      requestBody: {
+        valueInputOption: 'RAW',
+        data: [
+          { range: `'${sheetName}'!${col}1`, values: [[date]] },
+          { range: `'${sheetName}'!${col}2`, values: [[project.title]] },
+          { range: `'${sheetName}'!${col}3`, values: [[project.description ?? '']] },
+          { range: `'${sheetName}'!${col}4`, values: [[project.id]] }, // AppID（追跡用）
+        ],
+      },
     })
   }
 }
@@ -111,31 +124,36 @@ export async function readProjectsFromSheet(): Promise<{
   title: string
   description: string
 }[]> {
-  const auth = getAuth()
-  const sheets = google.sheets({ version: 'v4', auth })
   const sheetName = await getSheetName()
+  const columns = await readAllColumns(sheetName)
 
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!A2:D`,  // 2行目以降（1行目はヘッダー）
-  })
+  const results: { id: string | null; title: string; description: string }[] = []
 
-  return (res.data.values ?? [])
-    .filter(row => row[0])  // 案件名が空の行はスキップ
-    .map(row => ({
-      title: String(row[0] ?? ''),
-      description: String(row[1] ?? ''),
-      id: row[2] ? String(row[2]) : null,
-    }))
+  // 列Aはラベル列なのでスキップ、B列（インデックス1）以降を処理
+  for (let i = 1; i < columns.length; i++) {
+    const col = columns[i] ?? []
+    const title = String(col[1] ?? '').trim()   // row2 = 案件名
+    if (!title) continue
+
+    const description = String(col[2] ?? '').trim() // row3 = 案件詳細
+    const appId = col[3] ? String(col[3]).trim() : null // row4 = AppID
+
+    results.push({ id: appId, title, description })
+  }
+
+  return results
 }
 
-// スプレッドシートにIDを書き戻す（新規作成後）
-export async function writeIdToSheet(sheetName: string, rowIndex: number, id: string) {
+// スプレッドシートの特定列にIDを書き込む（新規作成後）
+export async function writeIdToSheetColumn(colIndex: number, id: string) {
+  const sheetName = await getSheetName()
   const auth = getAuth()
   const sheets = google.sheets({ version: 'v4', auth })
+  const col = colLetter(colIndex)
+
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!C${rowIndex}`,
+    range: `'${sheetName}'!${col}4`,
     valueInputOption: 'RAW',
     requestBody: { values: [[id]] },
   })
