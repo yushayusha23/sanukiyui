@@ -1,7 +1,7 @@
 import { google } from 'googleapis'
 
-const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_SPREADSHEET_ID!
-const SHEET_GID = process.env.GOOGLE_SHEETS_GID ?? '0'
+const SPREADSHEET_ID = (process.env.GOOGLE_SHEETS_SPREADSHEET_ID ?? '').trim()
+const SHEET_GID = (process.env.GOOGLE_SHEETS_GID ?? '0').trim()
 
 function getAuth() {
   // B64エンコード版を優先（改行問題を回避）
