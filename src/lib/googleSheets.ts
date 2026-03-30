@@ -59,6 +59,27 @@ async function readAllColumns(sheetName: string) {
   return res.data.values ?? []
 }
 
+// グリッドを必要なサイズに拡張
+async function expandGrid(sheetId: number, needRows: number, needCols: number) {
+  const auth = getAuth()
+  const sheets = google.sheets({ version: 'v4', auth })
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID })
+  const sheet = meta.data.sheets?.find(s => s.properties?.sheetId === sheetId)
+  const currentRows = sheet?.properties?.gridProperties?.rowCount ?? 0
+  const currentCols = sheet?.properties?.gridProperties?.columnCount ?? 0
+
+  const requests = []
+  if (needRows > currentRows) {
+    requests.push({ appendDimension: { sheetId, dimension: 'ROWS', length: needRows - currentRows } })
+  }
+  if (needCols > currentCols) {
+    requests.push({ appendDimension: { sheetId, dimension: 'COLUMNS', length: needCols - currentCols } })
+  }
+  if (requests.length > 0) {
+    await sheets.spreadsheets.batchUpdate({ spreadsheetId: SPREADSHEET_ID, requestBody: { requests } })
+  }
+}
+
 // アプリ → スプレッドシート（1件追加/更新）
 export async function upsertProjectToSheet(project: {
   id: string
@@ -68,6 +89,7 @@ export async function upsertProjectToSheet(project: {
   const auth = getAuth()
   const sheets = google.sheets({ version: 'v4', auth })
   const sheetName = await getSheetName()
+  const sheetGid = parseInt(SHEET_GID, 10)
 
   // 全列を読んでIDが一致する列を探す（row4 = AppID）
   const columns = await readAllColumns(sheetName)
@@ -86,6 +108,7 @@ export async function upsertProjectToSheet(project: {
 
   if (targetColIndex >= 0) {
     // 既存列を更新（行1=日付, 行2=案件名, 行3=案件詳細）
+    await expandGrid(sheetGid, 4, targetColIndex + 1)
     const col = colLetter(targetColIndex)
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SPREADSHEET_ID,
@@ -100,7 +123,8 @@ export async function upsertProjectToSheet(project: {
     })
   } else {
     // 新しい列を末尾に追加
-    const nextColIndex = columns.length // 現在の列数 = 次の列インデックス
+    const nextColIndex = columns.length
+    await expandGrid(sheetGid, 4, nextColIndex + 1)
     const col = colLetter(nextColIndex)
 
     await sheets.spreadsheets.values.batchUpdate({
