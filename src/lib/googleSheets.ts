@@ -108,8 +108,8 @@ export async function upsertProjectToSheet(project: {
 
   if (targetColIndex >= 0) {
     // 既存列を更新（行1=日付, 行2=案件名, 行3=案件詳細）
-    await expandGrid(sheetGid, 4, targetColIndex + 1)
     const col = colLetter(targetColIndex)
+    await expandGrid(sheetGid, 4, targetColIndex + 1)
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SPREADSHEET_ID,
       requestBody: {
@@ -124,8 +124,8 @@ export async function upsertProjectToSheet(project: {
   } else {
     // 新しい列を末尾に追加
     const nextColIndex = columns.length
-    await expandGrid(sheetGid, 4, nextColIndex + 1)
     const col = colLetter(nextColIndex)
+    await expandGrid(sheetGid, 4, nextColIndex + 1)
 
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SPREADSHEET_ID,
