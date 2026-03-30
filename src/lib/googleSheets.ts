@@ -122,11 +122,24 @@ export async function upsertProjectToSheet(project: {
       },
     })
   } else {
-    // 新しい列を末尾に追加
-    const nextColIndex = columns.length
-    const col = colLetter(nextColIndex)
-    await expandGrid(sheetGid, 4, nextColIndex + 1)
+    // C列（インデックス2）に新しい列を挿入（既存データは右にシフト）
+    const insertColIndex = 2 // C列
+    await expandGrid(sheetGid, 4, insertColIndex + 1)
 
+    // C列に新しい列を挿入
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SPREADSHEET_ID,
+      requestBody: {
+        requests: [{
+          insertDimension: {
+            range: { sheetId: sheetGid, dimension: 'COLUMNS', startIndex: insertColIndex, endIndex: insertColIndex + 1 },
+            inheritFromBefore: false,
+          }
+        }]
+      }
+    })
+
+    const col = colLetter(insertColIndex)
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SPREADSHEET_ID,
       requestBody: {
@@ -135,7 +148,7 @@ export async function upsertProjectToSheet(project: {
           { range: `'${sheetName}'!${col}1`, values: [[date]] },
           { range: `'${sheetName}'!${col}2`, values: [[project.title]] },
           { range: `'${sheetName}'!${col}3`, values: [[project.description ?? '']] },
-          { range: `'${sheetName}'!${col}4`, values: [[project.id]] }, // AppID（追跡用）
+          { range: `'${sheetName}'!${col}4`, values: [[project.id]] },
         ],
       },
     })
